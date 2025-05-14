@@ -1,0 +1,22 @@
+[project]
+name = "r2r-ctd"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+authors = [
+    { name = "Andrew Barna", email = "abarna@gmail.com" }
+]
+requires-python = ">=3.13"
+dependencies = []
+
+[project.scripts]
+r2r-ctd = "r2r_ctd:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[dependency-groups]
+dev = [
+    "sphinx>=8.2.3",
+]
