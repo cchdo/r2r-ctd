@@ -7,10 +7,13 @@ authors = [
     { name = "Andrew Barna", email = "abarna@gmail.com" }
 ]
 requires-python = ">=3.13"
-dependencies = []
+dependencies = [
+    "click>=8.2.0",
+    "docker>=7.1.0",
+]
 
 [project.scripts]
-r2r-ctd = "r2r_ctd:main"
+r2r-ctd = "r2r_ctd.__main__:main"
 
 [build-system]
 requires = ["hatchling"]
