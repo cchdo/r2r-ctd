@@ -12,8 +12,8 @@ This operates on an r2r CTD breakout direrctory that assumes the following struc
     * The bounding box and temporal bounds are in this file.
 
 Steps needed to do:
-- [ ] Check manifest file against breakout contents
-- [ ] create a list of "stations" from these files
+- [x] Check manifest file against breakout contents
+- [x] create a list of "stations" from these files
 - [ ] initialize a geocsv
 - [ ] for each "station"
   - [ ] exclude if looks like a deck test
@@ -24,6 +24,11 @@ Steps needed to do:
   - [ ] collect "cast info" (there is a bunch that goes in here)
   - [ ] write a record in the geoCSV
   - [ ] make seabird output products (dockerized sbe software)
+
+Progress as of 2025-05-19:
+* Decided to do with the odf.sbe netCDF/xarray file as a container for state and implimenting this. Plan is as follows:
+ - Check results will go into a r2r_qc var namespace
+ - results of file processing (e.g. conreport or other sbe processing steps) will go into their own vars so we can check if they are done to save processing time on repeat errors
 
 Progress as of 2025-05-16:
 * Started on an actual package to capture all the processing code

@@ -1,6 +1,12 @@
 from pathlib import Path
+from logging import getLogger
+
+from odf.sbe.io import string_loader
 
 import docker
+
+
+logger = getLogger(__name__)
 
 client = docker.from_env()
 
@@ -15,7 +21,8 @@ done
 exit 0;
 """
 
-def run_conreport(base_dir:Path, xmlcon:Path):
+
+def run_conreport(base_dir: Path, xmlcon: Path):
     sh = base_dir / "proc" / "sh" / "conreport.sh"
     if sh.exists():
         sh.unlink()
@@ -26,13 +33,19 @@ def run_conreport(base_dir:Path, xmlcon:Path):
     outdir = base_dir / "proc" / "config"
     outdir.mkdir(exist_ok=True, parents=True)
 
-    xmlcon_path = (base_dir / xmlcon).absolute()
-    print(xmlcon_path, xmlcon_path.exists())
-    return client.containers.run("r2r/sbe", 'su -c "/config/.wine/drive_c/proc/proc/sh/conreport.sh" abc', remove=True, volumes={
-    str(base_dir): {
-        "bind": "/config/.wine/drive_c/proc", "mode":"rw"
-    },
-    str(xmlcon_path): {
-        "bind": f"/config/.wine/drive_c/tmp/{xmlcon_path.name}", "mode":"ro"
-    }
-})
+    xmlcon_path = xmlcon.absolute()
+    conreport_logs = client.containers.run(
+        "r2r/sbe",
+        'su -c "/config/.wine/drive_c/proc/proc/sh/conreport.sh" abc',
+        remove=True,
+        volumes={
+            str(base_dir): {"bind": "/config/.wine/drive_c/proc", "mode": "rw"},
+            str(xmlcon_path): {
+                "bind": f"/config/.wine/drive_c/tmp/{xmlcon_path.name}",
+                "mode": "ro",
+            },
+        },
+    )
+    logger.debug(conreport_logs)
+    out_path = outdir / xmlcon_path.with_suffix(".txt").name
+    return string_loader(out_path, "conreport")
