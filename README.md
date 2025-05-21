@@ -16,14 +16,19 @@ Steps needed to do:
 - [x] create a list of "stations" from these files
 - [ ] initialize a geocsv
 - [ ] for each "station"
-  - [ ] exclude if looks like a deck test
-  - [ ] run conreport (dockerized sbe software)
-  - [ ] check if "all 3" files are present
+  - [X] exclude if looks like a deck test
+  - [X] run conreport (dockerized sbe software)
+  - [X] check if "all 3" files are present
   - [ ] validate time against curise bounds
   - [ ] validate lat/lon against cruise bounds
   - [ ] collect "cast info" (there is a bunch that goes in here)
   - [ ] write a record in the geoCSV
   - [ ] make seabird output products (dockerized sbe software)
+
+Progress as of 2025-05-20:
+* Had meeting with Alan about if this approach is workable, agreement that yes it is a good idea, so "full speed ahead"
+* 3 files present test being wirtten into nc state
+* conreport results being written into nc state
 
 Progress as of 2025-05-19:
 * Decided to do with the odf.sbe netCDF/xarray file as a container for state and implimenting this. Plan is as follows:
