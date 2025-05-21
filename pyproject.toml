@@ -11,6 +11,7 @@ dependencies = [
     "click>=8.2.0",
     "docker>=7.1.0",
     "odf-sbe>=0.1.0",
+    "rich>=14.0.0",
 ]
 
 [project.scripts]
