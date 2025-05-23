@@ -37,7 +37,7 @@ def run_conreport(base_dir: Path, xmlcon: Path):
     conreport_logs = client.containers.run(
         "r2r/sbe",
         'su -c "/config/.wine/drive_c/proc/conreport.sh" abc',
-        remove=True,
+        auto_remove=True,
         volumes={
             str(base_dir): {"bind": "/config/.wine/drive_c/proc", "mode": "rw"},
             str(xmlcon_path): {
