@@ -47,7 +47,7 @@ def initialize_or_get_state(breakout: Breakout, hex_path: Path) -> xr.Dataset:
     return data
 
 
-def get_or_write_derrived_file(ds: xr.Dataset, key: str, func: Callable, **kwargs):
+def get_or_write_derived_file(ds: xr.Dataset, key: str, func: Callable, **kwargs):
     if key in ds:
         logger.debug(f"Found existing {key}, skipping regeneration")
         return ds[key]

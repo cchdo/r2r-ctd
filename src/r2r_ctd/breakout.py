@@ -2,6 +2,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from functools import cached_property
 from hashlib import file_digest
+from lxml import etree
 
 from r2r_ctd.checks import is_deck_test
 
@@ -71,3 +72,19 @@ class Breakout:
 
         For the purposes of QC, these are the set of stations to operate on"""
         return [path for path in self.hex_paths if path not in self.deck_test_paths]
+
+    @property
+    def qa_template_path(self) -> Path:
+        """Get the file named <cruise>_<r2rid>_qc.2.0.xmlt from the breakout and return its path"""
+        qa_path = self.path / "qa"
+        candidates = list(qa_path.glob("*_qa.2.0.xmlt"))
+        if len(candidates) == 1:
+            return candidates[0]
+        if len(candidates) > 1:
+            raise ValueError(f"Multiple qa xml templates found {candidates}")
+
+        raise ValueError(f"No qa xml template found in {qa_path}")
+    
+    @property
+    def qa_template_xml(self) -> etree._ElementTree:
+        return etree.fromstring(self.qa_template_path.read_bytes())
