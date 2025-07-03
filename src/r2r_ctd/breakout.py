@@ -84,7 +84,7 @@ class Breakout:
             raise ValueError(f"Multiple qa xml templates found {candidates}")
 
         raise ValueError(f"No qa xml template found in {qa_path}")
-    
+
     @property
     def qa_template_xml(self) -> etree._ElementTree:
         return etree.fromstring(self.qa_template_path.read_bytes())

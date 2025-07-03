@@ -9,7 +9,7 @@ logger = getLogger(__name__)
 
 def is_deck_test(path: Path) -> bool:
     """Check if the given path "looks like" a deck test
-    
+
     This method matches the pathname against a list of strings that are common to desk tests
     """
     logger.debug(f"Checking if {path} is a decktest")
@@ -37,12 +37,12 @@ def is_deck_test(path: Path) -> bool:
 
 def check_three_files(ds: xr.Dataset) -> np.int8:
     """Check that each hex file has both an xmlcon and hdr files associated with it.
-    
+
     The input dataset is expected conform output of odf.sbe.read_hex. This dataset
     is then checked to see if it has all the correct keys. The details of finding/reading
     those files is left to odf.sbe.
 
-    This the result of this function need to be an integer 0 or 1 because it will be stored 
+    This the result of this function need to be an integer 0 or 1 because it will be stored
     """
     logger.debug("Checking if all three files")
     three_files = {"hex", "xmlcon", "hdr"}

@@ -25,4 +25,3 @@ rating = {
         "X if one or more tests could not be run."
     )
 }
-
