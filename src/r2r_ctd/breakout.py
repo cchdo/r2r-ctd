@@ -61,7 +61,7 @@ class Breakout:
                 out.append(path)
         return out
 
-    @property
+    @cached_property
     def deck_test_paths(self) -> list[Path]:
         """Returns a list of path that match the decktest checks from the origional"""
         return list(filter(is_deck_test, self.hex_paths))

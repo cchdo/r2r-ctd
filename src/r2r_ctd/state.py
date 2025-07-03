@@ -1,8 +1,9 @@
 from pathlib import Path
 from logging import getLogger
-from typing import Callable
+from typing import Callable, Protocol, Any
 
 import xarray as xr
+import numpy as np
 
 from odf.sbe import read_hex
 
@@ -11,6 +12,10 @@ from r2r_ctd.breakout import Breakout
 R2R_QC_VARNAME = "r2r_qc"
 
 logger = getLogger(__name__)
+
+
+class CheckFunc(Protocol):
+    def __call__(self, ds: xr.Dataset, **kwargs: Any) -> bool: ...
 
 
 def write_ds_r2r(ds: xr.Dataset) -> None:
@@ -59,7 +64,7 @@ def get_or_write_derived_file(ds: xr.Dataset, key: str, func: Callable, **kwargs
     return ds[key]
 
 
-def get_or_write_check(ds: xr.Dataset, key: str, func: Callable, **kwargs):
+def get_or_write_check(ds: xr.Dataset, key: str, func: CheckFunc, **kwargs) -> bool:
     if R2R_QC_VARNAME not in ds:
         ds[R2R_QC_VARNAME] = xr.DataArray()
 
@@ -68,12 +73,12 @@ def get_or_write_check(ds: xr.Dataset, key: str, func: Callable, **kwargs):
         logger.debug(
             f"{key} found in qc result already with value {value}, skipping test"
         )
-        return value
+        return bool(value)
 
     logger.debug(f"Results not found running test {key}")
     check_result = func(ds, **kwargs)
     logger.debug(f"Test result value {check_result}, writing to state")
-    ds[R2R_QC_VARNAME].attrs[key] = check_result
+    ds[R2R_QC_VARNAME].attrs[key] = np.int8(check_result)
     write_ds_r2r(ds)
 
     return check_result
