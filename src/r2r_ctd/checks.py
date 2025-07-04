@@ -1,7 +1,6 @@
 from pathlib import Path
 from logging import getLogger
 
-import numpy as np
 import xarray as xr
 
 logger = getLogger(__name__)
