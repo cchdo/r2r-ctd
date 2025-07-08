@@ -12,13 +12,64 @@ import xarray as xr
 
 logger = getLogger(__name__)
 
+
+def _parse_coord(coord: str) -> float | None:
+    hem_ints = {
+        "N": 1,
+        "S": -1,
+        "E": 1,
+        "W": -1,
+    }
+
+    try:
+        d_, m_, h_ = coord.split()
+    except ValueError:
+        logger.error(f"Could not unpack {coord} into DDM", exc_info=True)
+        return
+
+    try:
+        d = float(d_)
+    except ValueError:
+        logger.error(f"Could not parse degree {d_} as float", exc_info=True)
+        return
+
+    try:
+        m = float(m_)
+    except ValueError:
+        logger.error(f"Could not parse decimal minute {m_} as float", exc_info=True)
+        return
+
+    try:
+        h = hem_ints[h_.upper()]
+    except KeyError:
+        logger.error(f"Could not parse hemisphere {h_}", exc_info=True)
+        return
+
+    return (d + (m / 60)) * h
+
+
+def get_longitude(ds: xr.Dataset) -> float | None:
+    """Get the cast longitude from NMEA header
+
+    The original code from WHOI tries to also get this from the ** Longitude line
+    but the ** means it is a comment and can be _anything_ the user puts in.
+    """
+    headers = parse_hdr(ds.hdr.item())
+    if (value := headers.get("NMEA Longitude")) is not None:
+        return _parse_coord(value)
+
+
 def get_latitude(ds) -> float:
-    ...
+    """Get the cast latitude from NMEA header
 
-def get_longitude(ds) -> float:
-    ...
+    See the docstring for get_longitude for comment on original code"""
 
-def _normalize_date_strings(date:str) -> str:
+    headers = parse_hdr(ds.hdr.item())
+    if (value := headers.get("NMEA Latitude")) is not None:
+        return _parse_coord(value)
+
+
+def _normalize_date_strings(date: str) -> str:
     """Try to make the date strings in sbe hdr files have a consistent format
 
     There can be variable whitespace between time elements, this function
@@ -27,9 +78,9 @@ def _normalize_date_strings(date:str) -> str:
     return " ".join(date.split())
 
 
-def get_time(ds:xr.Dataset) -> float | None:
+def get_time(ds: xr.Dataset) -> float | None:
     """Gets the time from the hdr file
-    
+
     In the following prioirty order:
     * NMEA UTC (Time)
     * System UTC
@@ -53,6 +104,7 @@ def get_time(ds:xr.Dataset) -> float | None:
             return dt.timestamp()
 
     logger.warning("No time value could be parsed")
+
 
 def make_conreport(ds: xr.Dataset):
     with TemporaryDirectory() as tmpdir:
