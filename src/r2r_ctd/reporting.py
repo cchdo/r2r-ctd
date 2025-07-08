@@ -57,7 +57,7 @@ def valid_checksum(rating: Literal["G", "R"]) -> Element:
 
 
 def lat_lon_range(
-    rating: Literal["G", "R", "Y", "N", "B"], test_result: str | int
+    rating: Literal["G", "R", "Y", "N", "X"], test_result: str | int
 ) -> Element:
     return Test(
         Rating(rating),
@@ -69,7 +69,7 @@ def lat_lon_range(
 
 
 def date_range(
-    rating: Literal["G", "R", "Y", "N", "B"], test_result: str | int
+    rating: Literal["G", "R", "Y", "N", "X"], test_result: str | int
 ) -> Element:
     return Test(
         Rating(rating),

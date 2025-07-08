@@ -43,7 +43,7 @@ class DTRange(NamedTuple):
 
 @dataclass
 class Breakout:
-    """Convience wrapper for manipulating the various Paths of the r2r breakout"""
+    """Convenience wrapper for manipulating the various Paths of the r2r breakout"""
 
     path: Path
 
