@@ -1,10 +1,44 @@
 from dataclasses import dataclass
+from typing import NamedTuple
 from pathlib import Path
 from functools import cached_property
 from hashlib import file_digest
 from lxml import etree
+from datetime import datetime, timedelta
 
 from r2r_ctd.checks import is_deck_test
+
+
+class BBox(NamedTuple):
+    w: float
+    s: float
+    e: float
+    n: float
+
+    def contains(self, lon: float, lat: float) -> bool:
+        if lat < self.s:
+            return False
+        if lat > self.n:
+            return False
+        if self.w > self.e:  # case of crossing the antimeridian
+            if self.e < lon < self.w:
+                return False
+        else:
+            if lon > self.e:
+                return False
+            if lon < self.w:
+                return False
+
+        return True
+
+
+class DTRange(NamedTuple):
+    dtstart: datetime
+    dtend: datetime
+
+    def contains(self, dt: datetime) -> bool:
+        end = self.dtend + timedelta(days=1)  # check the end of the day
+        return self.dtstart <= dt < end
 
 
 @dataclass
@@ -88,3 +122,51 @@ class Breakout:
     @property
     def qa_template_xml(self) -> etree._ElementTree:
         return etree.fromstring(self.qa_template_path.read_bytes())
+
+    @property
+    def bbox(self) -> BBox:
+        """The bbox of the cruise in geojson bbox format/order"""
+        nsmap = self.qa_template_xml.nsmap
+        prefix = "/r2r:qareport/r2r:filesetinfo/r2r:cruise/r2r:extent"
+        w = self.qa_template_xml.xpath(
+            f"{prefix}/r2r:westernmost/text()", namespaces=nsmap
+        )
+        s = self.qa_template_xml.xpath(
+            f"{prefix}/r2r:southernmost/text()", namespaces=nsmap
+        )
+        e = self.qa_template_xml.xpath(
+            f"{prefix}/r2r:easternmost/text()", namespaces=nsmap
+        )
+        n = self.qa_template_xml.xpath(
+            f"{prefix}/r2r:northernmost/text()", namespaces=nsmap
+        )
+        result = []
+        for elm in (w, s, e, n):
+            if len(elm) != 1:
+                raise ValueError(
+                    "Zero or more than one geographic bound in breakout xml"
+                )
+            result.append(float(elm[0]))
+        if len(result) != 4:
+            raise ValueError("bug in bbox code?")
+        return BBox(*result)
+
+    def temporal_bounds(self) -> DTRange:
+        nsmap = self.qa_template_xml.nsmap
+        prefix = "/r2r:qareport/r2r:filesetinfo/r2r:cruise"
+        start = self.qa_template_xml.xpath(
+            f"{prefix}/r2r:depart_date/text()", namespaces=nsmap
+        )
+        stop = self.qa_template_xml.xpath(
+            f"{prefix}/r2r:arrive_date/text()", namespaces=nsmap
+        )
+
+        result = []
+        for elm in (start, stop):
+            if len(elm) != 1:
+                raise ValueError("Zero or more than one temporal bound in breakout xml")
+            result.append(datetime.strptime(elm[0], "%Y-%m-%d"))
+        if len(result) != 2:
+            raise ValueError("bug in temporal bound code?")
+
+        return DTRange(*result)
