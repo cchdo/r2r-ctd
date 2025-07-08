@@ -9,7 +9,13 @@ from r2r_ctd.state import (
     get_or_write_check,
     get_or_write_derived_file,
 )
-from r2r_ctd.checks import check_three_files
+from r2r_ctd.checks import (
+    check_three_files,
+    check_dt,
+    check_lat_lon,
+    check_time_valid,
+    check_lat_lon_valid,
+)
 from r2r_ctd.derived import make_conreport
 
 import click
@@ -36,6 +42,12 @@ def main(paths: tuple[Path, ...]):
             data = initialize_or_get_state(breakout, station)
             get_or_write_check(data, "three_files", check_three_files)
             get_or_write_derived_file(data, "conreport", make_conreport)
+            get_or_write_check(data, "date_valid", check_time_valid)
+            get_or_write_check(data, "lat_lon_valid", check_lat_lon_valid)
+            get_or_write_check(data, "lat_lon_range", check_lat_lon, bbox=breakout.bbox)
+            get_or_write_check(
+                data, "date_range", check_dt, dtrange=breakout.temporal_bounds()
+            )
 
 
 if __name__ == "__main__":

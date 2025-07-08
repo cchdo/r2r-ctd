@@ -101,7 +101,7 @@ def get_time(ds: xr.Dataset) -> float | None:
             except ValueError:
                 logger.error("Could not parse header time value", exc_info=True)
                 continue
-            return dt.timestamp()
+            return dt
 
     logger.warning("No time value could be parsed")
 

@@ -71,13 +71,13 @@ def get_or_write_check(ds: xr.Dataset, key: str, func: CheckFunc, **kwargs) -> b
     if key in ds[R2R_QC_VARNAME].attrs:
         value = ds[R2R_QC_VARNAME].attrs[key]
         logger.debug(
-            f"{key} found in qc result already with value {value}, skipping test"
+            f"{key}: found result already with value {bool(value)}, skipping test"
         )
         return bool(value)
 
     logger.debug(f"Results not found running test {key}")
     check_result = func(ds, **kwargs)
-    logger.debug(f"Test result value {check_result}, writing to state")
+    logger.debug(f"Test result for {key} if {check_result}, writing to state")
     ds[R2R_QC_VARNAME].attrs[key] = np.int8(check_result)
     write_ds_r2r(ds)
 
