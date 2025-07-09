@@ -121,27 +121,20 @@ class Breakout:
 
     @property
     def qa_template_xml(self) -> etree._ElementTree:
-        return etree.fromstring(
-            self.qa_template_path.read_bytes(), etree.XMLParser(remove_blank_text=True)
+        return etree.parse(
+            self.qa_template_path, etree.XMLParser(remove_blank_text=True)
         )
 
     @property
     def bbox(self) -> BBox:
         """The bbox of the cruise in geojson bbox format/order"""
-        nsmap = self.qa_template_xml.nsmap
+        root = self.qa_template_xml.getroot()
+        nsmap = root.nsmap
         prefix = "/r2r:qareport/r2r:filesetinfo/r2r:cruise/r2r:extent"
-        w = self.qa_template_xml.xpath(
-            f"{prefix}/r2r:westernmost/text()", namespaces=nsmap
-        )
-        s = self.qa_template_xml.xpath(
-            f"{prefix}/r2r:southernmost/text()", namespaces=nsmap
-        )
-        e = self.qa_template_xml.xpath(
-            f"{prefix}/r2r:easternmost/text()", namespaces=nsmap
-        )
-        n = self.qa_template_xml.xpath(
-            f"{prefix}/r2r:northernmost/text()", namespaces=nsmap
-        )
+        w = root.xpath(f"{prefix}/r2r:westernmost/text()", namespaces=nsmap)
+        s = root.xpath(f"{prefix}/r2r:southernmost/text()", namespaces=nsmap)
+        e = root.xpath(f"{prefix}/r2r:easternmost/text()", namespaces=nsmap)
+        n = root.xpath(f"{prefix}/r2r:northernmost/text()", namespaces=nsmap)
         result = []
         for elm in (w, s, e, n):
             if len(elm) != 1:
@@ -154,14 +147,11 @@ class Breakout:
         return BBox(*result)
 
     def temporal_bounds(self) -> DTRange:
-        nsmap = self.qa_template_xml.nsmap
+        root = self.qa_template_xml.getroot()
+        nsmap = root.nsmap
         prefix = "/r2r:qareport/r2r:filesetinfo/r2r:cruise"
-        start = self.qa_template_xml.xpath(
-            f"{prefix}/r2r:depart_date/text()", namespaces=nsmap
-        )
-        stop = self.qa_template_xml.xpath(
-            f"{prefix}/r2r:arrive_date/text()", namespaces=nsmap
-        )
+        start = root.xpath(f"{prefix}/r2r:depart_date/text()", namespaces=nsmap)
+        stop = root.xpath(f"{prefix}/r2r:arrive_date/text()", namespaces=nsmap)
 
         result = []
         for elm in (start, stop):
