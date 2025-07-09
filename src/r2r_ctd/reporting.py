@@ -223,6 +223,25 @@ class ResultAggregator:
         return "G"
 
     @property
+    def info_total_raw_files(self):
+        return Info(
+            str(len(self.breakout.hex_paths)),
+            name="Total Raw Files",
+            uom="# of .hex/.dat Files",
+        )
+
+    @property
+    def info_number_bottles(self):
+        result = []
+        for station in self.breakout.stations_hex_paths:
+            data = initialize_or_get_state(self.breakout, station)
+            result.append("bl" in data)
+
+        return Info(
+            str(result.count(True)), name="# of Casts with Bottles Fired", uom="Count"
+        )
+
+    @property
     def certificate(self):
         return Certificate(
             overall_rating(self.rating),
@@ -233,5 +252,9 @@ class ResultAggregator:
                 valid_checksum(self.valid_checksum_rating),
                 lat_lon_range(self.lat_lon_nav_ranges_rating, self.lat_lon_nav_range),
                 date_range(self.time_rating, self.time_range),
+            ),
+            Infos(
+                self.info_total_raw_files,
+                self.info_number_bottles,
             ),
         )
