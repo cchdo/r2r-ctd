@@ -4,6 +4,7 @@ from dataclasses import dataclass
 from typing import Literal
 
 from rich.logging import RichHandler
+from lxml import etree
 
 from r2r_ctd.breakout import Breakout
 from r2r_ctd.state import (
@@ -20,7 +21,7 @@ from r2r_ctd.checks import (
 )
 from r2r_ctd.derived import make_conreport
 
-from r2r_ctd.reporting import Tests, overall_rating
+from r2r_ctd import reporting
 
 import click
 
@@ -155,6 +156,22 @@ class ResultAggregator:
             return "Y"
         return "G"
 
+    @property
+    def certificate(self):
+        return reporting.Certificate(
+            reporting.overall_rating(self.rating),
+            reporting.Tests(
+                reporting.file_presence(
+                    self.presence_of_all_files_rating, self.presence_of_all_files
+                ),
+                reporting.valid_checksum(self.valid_checksum_rating),
+                reporting.lat_lon_range(
+                    self.lat_lon_nav_ranges_rating, self.lat_lon_nav_range
+                ),
+                reporting.date_range(self.time_rating, self.time_range),
+            ),
+        )
+
 
 @click.command()
 @click.argument(
@@ -174,7 +191,13 @@ def main(paths: tuple[Path, ...]):
         qa_path = breakout.qa_template_xml
 
         ra = ResultAggregator(breakout)
-        print(ra.rating)
+        # print(etree.tostring(ra.certificate, pretty_print=True).decode())
+
+        nsmap = qa_path.nsmap
+        prefix = "/r2r:qareport"
+        cert = qa_path.xpath(f"{prefix}/r2r:certificate", namespaces=nsmap)[0]
+        qa_path.replace(cert, ra.certificate)
+        print(etree.tostring(qa_path, pretty_print=True).decode())
 
 
 if __name__ == "__main__":

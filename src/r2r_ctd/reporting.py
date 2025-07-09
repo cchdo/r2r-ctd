@@ -8,6 +8,7 @@ E = ElementMaker(
     nsmap={"r2r": "https://service.rvdata.us/schema/r2r-2.0"},
 )
 
+Certificate = E.certificate
 Rating = E.rating
 Tests = E.tests
 Test = E.test
