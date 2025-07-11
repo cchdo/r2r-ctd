@@ -8,6 +8,8 @@ from r2r_ctd.reporting import ResultAggregator
 
 import click
 
+from r2r_ctd.state import get_xml_qa_path
+
 
 @click.command()
 @click.argument(
@@ -24,17 +26,17 @@ def main(paths: tuple[Path, ...]):
     for path in paths:
         breakout = Breakout(path=path)
 
-        qa_path = breakout.qa_template_xml
+        qa_xml = breakout.qa_template_xml
 
         ra = ResultAggregator(breakout)
 
-        root = qa_path.getroot()
+        root = qa_xml.getroot()
         nsmap = root.nsmap
         prefix = "/r2r:qareport"
         cert = root.xpath(f"{prefix}/r2r:certificate", namespaces=nsmap)[0]
         root.replace(cert, ra.certificate)
-        with open("out.xml", "wb") as f:
-            qa_path.write(
+        with open(get_xml_qa_path(breakout), "wb") as f:
+            qa_xml.write(
                 f,
                 pretty_print=True,
                 xml_declaration=True,

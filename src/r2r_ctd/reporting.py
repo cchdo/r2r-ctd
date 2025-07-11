@@ -1,3 +1,4 @@
+from functools import cached_property
 from typing import Literal
 from dataclasses import dataclass
 
@@ -96,7 +97,7 @@ def date_range(
 class ResultAggregator:
     breakout: Breakout
 
-    @property
+    @cached_property
     def presence_of_all_files(self) -> int:
         results = []
         for station in self.breakout.stations_hex_paths:
@@ -117,7 +118,7 @@ class ResultAggregator:
             return "G"
         return "R"
 
-    @property
+    @cached_property
     def lat_lon_nav_valid(self) -> int:
         results = []
         for station in self.breakout.stations_hex_paths:
@@ -128,7 +129,7 @@ class ResultAggregator:
 
         return int((results.count(True) / len(results)) * 100)
 
-    @property
+    @cached_property
     def lat_lon_nav_range(self) -> int:
         results = []
         for station in self.breakout.stations_hex_paths:
@@ -160,7 +161,7 @@ class ResultAggregator:
 
         return "R"
 
-    @property
+    @cached_property
     def time_valid(self) -> int:
         results = []
         for station in self.breakout.stations_hex_paths:
@@ -169,7 +170,7 @@ class ResultAggregator:
 
         return int((results.count(True) / len(results)) * 100)
 
-    @property
+    @cached_property
     def time_range(self) -> int:
         results = []
         for station in self.breakout.stations_hex_paths:
@@ -230,7 +231,7 @@ class ResultAggregator:
             uom="# of .hex/.dat Files",
         )
 
-    @property
+    @cached_property
     def info_number_bottles(self):
         result = []
         for station in self.breakout.stations_hex_paths:

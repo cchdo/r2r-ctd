@@ -27,11 +27,22 @@ def write_ds_r2r(ds: xr.Dataset) -> None:
 
 def get_state_path(breakout: Breakout, hex_path: Path) -> Path:
     nc_dir = breakout.path / "proc" / "nc"
-    logger.debug(f"Making nc state directory {nc_dir}")
+
+    if not nc_dir.exists():
+        logger.debug(f"Making nc state directory {nc_dir}")
+
     nc_dir.mkdir(exist_ok=True, parents=True)
 
     nc_fname = hex_path.with_suffix(".nc").name
     return nc_dir / nc_fname
+
+def get_xml_qa_path(breakout: Breakout) -> Path:
+    xml_qa_name = breakout.qa_template_path.with_suffix(".xml").name
+
+    qa_dir = breakout.path / "proc"
+    qa_dir.mkdir(exist_ok=True, parents=True)
+
+    return qa_dir / xml_qa_name
 
 
 def initialize_or_get_state(breakout: Breakout, hex_path: Path) -> xr.Dataset:
