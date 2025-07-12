@@ -36,6 +36,7 @@ def get_state_path(breakout: Breakout, hex_path: Path) -> Path:
     nc_fname = hex_path.with_suffix(".nc").name
     return nc_dir / nc_fname
 
+
 def get_xml_qa_path(breakout: Breakout) -> Path:
     xml_qa_name = breakout.qa_template_path.with_suffix(".xml").name
 

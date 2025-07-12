@@ -13,7 +13,12 @@ from r2r_ctd.checks import (
     check_three_files,
     check_time_valid,
 )
-from r2r_ctd.state import get_or_write_check, initialize_or_get_state
+from r2r_ctd.derived import make_conreport
+from r2r_ctd.state import (
+    get_or_write_check,
+    get_or_write_derived_file,
+    initialize_or_get_state,
+)
 
 E = ElementMaker(
     namespace="https://service.rvdata.us/schema/r2r-2.0",
@@ -242,6 +247,18 @@ class ResultAggregator:
             str(result.count(True)), name="# of Casts with Bottles Fired", uom="Count"
         )
 
+    @cached_property
+    def info_model_number(self):
+        # The WHOI code did this in a loop that didn't handle the case
+        # of multiple instrument types in the same breakout
+        # it also appears to just use the last station iterated over (unsure if ordered)
+        # we are going to emulate that here
+        for station in self.breakout.stations_hex_paths:
+            data = initialize_or_get_state(self.breakout, station)
+            conreport = get_or_write_derived_file(data, "conreport", make_conreport)
+
+        return Info("SBE9")
+
     @property
     def certificate(self):
         return Certificate(
@@ -257,5 +274,6 @@ class ResultAggregator:
             Infos(
                 self.info_total_raw_files,
                 self.info_number_bottles,
+                self.info_model_number,
             ),
         )

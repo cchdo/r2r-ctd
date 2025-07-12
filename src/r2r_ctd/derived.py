@@ -107,8 +107,4 @@ def get_time(ds: xr.Dataset) -> float | None:
 
 
 def make_conreport(ds: xr.Dataset):
-    with TemporaryDirectory() as tmpdir:
-        tmpdirp = Path(tmpdir)
-        xmlcon_path = tmpdirp / ds.xmlcon.attrs["filename"]
-        ds.sbe.to_xmlcon(xmlcon_path)
-        return run_conreport(Path(tmpdir), xmlcon_path)
+    return run_conreport(ds.xmlcon.attrs["filename"], ds.sbe.to_xmlcon())
