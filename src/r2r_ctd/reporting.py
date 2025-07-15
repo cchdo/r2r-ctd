@@ -329,7 +329,7 @@ class ResultAggregator:
             models = _conreport_sn_getter(conreport.item(), "Conductivity")
             sn = _hdr_sn_getter(data.hdr.item(), "Conductivity")
             if sn not in models:
-                problem_casts.append(station.name)
+                problem_casts.append(station.stem)
         return Info(
             " ".join(problem_casts),
             name="Casts with cond. sensor serial number problem",
@@ -338,11 +338,31 @@ class ResultAggregator:
 
     @cached_property
     def info_casts_with_bad_nav(self):
-        return Info("TODO")
+        problem_casts = []
+        for station in self.breakout.stations_hex_paths:
+            data = initialize_or_get_state(self.breakout, station)
+            if not get_or_write_check(data, "lat_lon_valid", check_lat_lon_valid):
+                problem_casts.append(station.stem)
+        return Info(
+            " ".join(problem_casts),
+            name="Casts with Blank, missing, or unrecognizable NAV",
+            uom="List",
+        )
 
     @cached_property
     def info_casts_failed_nav_bounds(self):
-        return Info("TODO")
+        problem_casts = []
+        for station in self.breakout.stations_hex_paths:
+            data = initialize_or_get_state(self.breakout, station)
+            if not get_or_write_check(
+                data, "lat_lon_range", check_lat_lon, bbox=self.breakout.bbox
+            ):
+                problem_casts.append(station.stem)
+        return Info(
+            " ".join(problem_casts),
+            name="Casts that Failed NAV Boundary Tests",
+            uom="List",
+        )
 
     @property
     def certificate(self):
@@ -362,7 +382,7 @@ class ResultAggregator:
                 self.info_model_number,
                 self.info_number_casts_with_nav_all_scans,
                 self.info_casts_with_hex_bad_format,
-                self.info_casts_with_dock_deck_test_in_file_name,
+                self.info_casts_with_xmlcon_bad_format,
                 self.info_casts_with_dock_deck_test_in_file_name,
                 self.info_casts_with_temp_sensor_sn_problems,
                 self.info_casts_with_cond_sensor_sn_problems,
