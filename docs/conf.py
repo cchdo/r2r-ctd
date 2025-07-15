@@ -28,4 +28,4 @@ html_static_path = ['_static']
 
 autoapi_dirs = ['../src']
 
-myst_enable_extensions = ["colon_fence"]
+myst_enable_extensions = ["colon_fence", "fieldlist"]
