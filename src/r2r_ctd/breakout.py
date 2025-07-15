@@ -97,7 +97,7 @@ class Breakout:
 
     @cached_property
     def deck_test_paths(self) -> list[Path]:
-        """Returns a list of path that match the decktest checks from the origional"""
+        """Returns a list of path that match the decktest checks from the original"""
         return list(filter(is_deck_test, self.hex_paths))
 
     @property

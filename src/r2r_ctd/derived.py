@@ -1,5 +1,3 @@
-from pathlib import Path
-from tempfile import TemporaryDirectory
 from datetime import datetime
 from logging import getLogger
 
@@ -108,3 +106,46 @@ def get_time(ds: xr.Dataset) -> float | None:
 
 def make_conreport(ds: xr.Dataset):
     return run_conreport(ds.xmlcon.attrs["filename"], ds.sbe.to_xmlcon())
+
+
+def get_model(conreport: str) -> str | None:
+    if "Configuration report for SBE 25" in conreport:
+        return "SBE25"
+    if "Configuration report for SBE 49" in conreport:
+        return "SBE49"
+    if "Configuration report for SBE 911plus" in conreport:
+        return "SBE911"
+    if "Configuration report for SBE 19plus" in conreport:
+        return "SBE19"
+
+
+def _conreport_sn_getter(conreport: str, instrument: str) -> set[str]:
+    section = 0
+    title = ""
+    sns = []
+    for line in conreport.splitlines():
+        try:
+            section, title = line.split(")", maxsplit=1)
+            section = int(section)
+        except ValueError:
+            pass
+        if instrument not in title:
+            continue
+
+        try:
+            key, value = line.split(":", maxsplit=1)
+        except ValueError:
+            continue
+
+        key = key.strip().lower()
+        value = value.strip()
+
+        if key == "serial number":
+            sns.append(value)
+
+    return set(sns)
+
+
+def _hdr_sn_getter(hdr: str, instrument: str) -> str | None:
+    header = parse_hdr(hdr)
+    return header.get(f"{instrument} SN")

@@ -13,7 +13,12 @@ from r2r_ctd.checks import (
     check_three_files,
     check_time_valid,
 )
-from r2r_ctd.derived import make_conreport
+from r2r_ctd.derived import (
+    _conreport_sn_getter,
+    _hdr_sn_getter,
+    get_model,
+    make_conreport,
+)
 from r2r_ctd.state import (
     get_or_write_check,
     get_or_write_derived_file,
@@ -253,11 +258,91 @@ class ResultAggregator:
         # of multiple instrument types in the same breakout
         # it also appears to just use the last station iterated over (unsure if ordered)
         # we are going to emulate that here
+        # There are also two code paths, one parses the xmlcon directly the other uses seabird software
+        # We are going to use the seabird method here since it was the default in what was provided
+        model = ""
         for station in self.breakout.stations_hex_paths:
             data = initialize_or_get_state(self.breakout, station)
             conreport = get_or_write_derived_file(data, "conreport", make_conreport)
+            model = get_model(conreport.item()) or ""
 
-        return Info("SBE9")
+        return Info(model, name="Model Number of CTD Instrument", uom="Unitless")
+
+    @cached_property
+    def info_number_casts_with_nav_all_scans(self):
+        number = 0
+        for station in self.breakout.stations_hex_paths:
+            data = initialize_or_get_state(self.breakout, station)
+            if (
+                "hdr" in data
+                and "Store Lat/Lon Data = Append to Every Scan" in data.hdr.item()
+            ):
+                number += 1
+
+        return Info(str(number), name="# of Casts with NAV for All Scans", uom="Count")
+
+    @cached_property
+    def info_casts_with_hex_bad_format(self):
+        # The WHOI code runs `file -b` and checks to see if the result has one of:
+        # "data", "objects", or "executable" in the type
+        # I think we need an example of some bad files for this
+        # For now, always returning OK
+        return Info("", name="Casts with Hex file in Bad Format", uom="List")
+
+    @cached_property
+    def info_casts_with_xmlcon_bad_format(self):
+        ## Same as above, no format is checked, just that it is not one of those above
+        # Presumably the seabird software will crash/hang if this is bad?
+        # need example
+        return Info("", name="Casts with XMLCON/con file in Bad Format", uom="List")
+
+    @cached_property
+    def info_casts_with_dock_deck_test_in_file_name(self):
+        return Info(
+            " ".join(path.name for path in self.breakout.deck_test_paths),
+            name="Casts with dock/deck and test in file name",
+            uom="List",
+        )
+
+    @cached_property
+    def info_casts_with_temp_sensor_sn_problems(self):
+        problem_casts = []
+        for station in self.breakout.stations_hex_paths:
+            data = initialize_or_get_state(self.breakout, station)
+            conreport = get_or_write_derived_file(data, "conreport", make_conreport)
+            models = _conreport_sn_getter(conreport.item(), "Temperature")
+            sn = _hdr_sn_getter(data.hdr.item(), "Temperature")
+            if sn not in models:
+                problem_casts.append(station.name)
+        return Info(
+            " ".join(problem_casts),
+            name="Casts with temp. sensor serial number problem",
+            uom="List",
+        )
+
+    @cached_property
+    def info_casts_with_cond_sensor_sn_problems(self):
+        problem_casts = []
+        for station in self.breakout.stations_hex_paths:
+            data = initialize_or_get_state(self.breakout, station)
+            conreport = get_or_write_derived_file(data, "conreport", make_conreport)
+            models = _conreport_sn_getter(conreport.item(), "Conductivity")
+            sn = _hdr_sn_getter(data.hdr.item(), "Conductivity")
+            if sn not in models:
+                problem_casts.append(station.name)
+        return Info(
+            " ".join(problem_casts),
+            name="Casts with cond. sensor serial number problem",
+            uom="List",
+        )
+
+    @cached_property
+    def info_casts_with_bad_nav(self):
+        return Info("TODO")
+
+    @cached_property
+    def info_casts_failed_nav_bounds(self):
+        return Info("TODO")
 
     @property
     def certificate(self):
@@ -275,5 +360,13 @@ class ResultAggregator:
                 self.info_total_raw_files,
                 self.info_number_bottles,
                 self.info_model_number,
+                self.info_number_casts_with_nav_all_scans,
+                self.info_casts_with_hex_bad_format,
+                self.info_casts_with_dock_deck_test_in_file_name,
+                self.info_casts_with_dock_deck_test_in_file_name,
+                self.info_casts_with_temp_sensor_sn_problems,
+                self.info_casts_with_cond_sensor_sn_problems,
+                self.info_casts_with_bad_nav,
+                self.info_casts_failed_nav_bounds,
             ),
         )
