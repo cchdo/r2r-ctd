@@ -9,32 +9,34 @@ import docker
 
 logger = getLogger(__name__)
 
-_container = None # singleton of the sbe container
-_tmpdir = TemporaryDirectory() # singleton 
+_container = None  # singleton of the sbe container
+_tmpdir = TemporaryDirectory()  # singleton tempdir for IO with docker container
+
 
 def get_container():
     global _container
     if _container is not None:
         return _container
+    logger.info("Launching container for running SBE software")
     client = docker.from_env()
+    labels = ["us.rvdata.ctd-proc"]
     _container = client.containers.run(
         "r2r/sbe",
         auto_remove=True,
         detach=True,
         volumes={str(_tmpdir.name): {"bind": "/.wine/drive_c/proc", "mode": "rw"}},
-        labels=["us.rvdata.ctd-proc"]
+        labels=labels,
     )
-
-
+    logger.info(f"Container launched as {_container.name} with labels: {labels}")
 
     def _kill_container():
         logger.info(f"attempting to kill wine container: {_container.name}")
         _container.kill()
 
-
     atexit.register(_kill_container)
 
     return _container
+
 
 conreport_sh = r"""export DISPLAY=:1
 export HODLL=libwow64fex.dll
@@ -71,8 +73,15 @@ def run_conreport(fname: str, xmlcon: str):
 
     conreport_logs = container.exec_run(
         'su -c "/.wine/drive_c/proc/sh/conreport.sh" abc',
+        demux=True
     )
-    logger.debug(conreport_logs)
+    try:
+        logger.debug(conreport_logs.output[1].decode()) # Stderr
+    except IndexError:
+        pass
+
+    logger.info(conreport_logs.output[0].decode()) # stdout
+
     out_path = outdir / infile.with_suffix(".txt").name
 
     conreport = string_loader(out_path, "conreport").conreport
