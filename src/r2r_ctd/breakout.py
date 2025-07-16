@@ -7,6 +7,7 @@ from lxml import etree
 from datetime import datetime, timedelta
 
 from r2r_ctd.checks import is_deck_test
+from r2r_ctd.state import initialize_or_get_state
 
 
 class BBox(NamedTuple):
@@ -162,3 +163,17 @@ class Breakout:
             raise ValueError("bug in temporal bound code?")
 
         return DTRange(*result)
+
+    def __getitem__(self, key):
+        try:
+            return self.__cache[key]
+        except AttributeError:
+            self.__cache = {key: initialize_or_get_state(self, key)}
+            return self.__cache[key]
+        except KeyError:
+            self.__cache[key] = initialize_or_get_state(self, key)
+            return self.__cache[key]
+
+    def __iter__(self):
+        for path in self.hex_paths:
+            yield self[path]

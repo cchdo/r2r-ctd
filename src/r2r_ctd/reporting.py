@@ -22,7 +22,6 @@ from r2r_ctd.derived import (
 from r2r_ctd.state import (
     get_or_write_check,
     get_or_write_derived_file,
-    initialize_or_get_state,
 )
 
 E = ElementMaker(
@@ -111,7 +110,7 @@ class ResultAggregator:
     def presence_of_all_files(self) -> int:
         results = []
         for station in self.breakout.stations_hex_paths:
-            data = initialize_or_get_state(self.breakout, station)
+            data = self.breakout[station]
             results.append(get_or_write_check(data, "three_files", check_three_files))
 
         return int((results.count(True) / len(results)) * 100)
@@ -131,8 +130,7 @@ class ResultAggregator:
     @cached_property
     def lat_lon_nav_valid(self) -> int:
         results = []
-        for station in self.breakout.stations_hex_paths:
-            data = initialize_or_get_state(self.breakout, station)
+        for data in self.breakout:
             results.append(
                 get_or_write_check(data, "lat_lon_valid", check_lat_lon_valid)
             )
@@ -142,8 +140,7 @@ class ResultAggregator:
     @cached_property
     def lat_lon_nav_range(self) -> int:
         results = []
-        for station in self.breakout.stations_hex_paths:
-            data = initialize_or_get_state(self.breakout, station)
+        for data in self.breakout:
             results.append(
                 get_or_write_check(
                     data, "lat_lon_range", check_lat_lon, bbox=self.breakout.bbox
@@ -174,8 +171,7 @@ class ResultAggregator:
     @cached_property
     def time_valid(self) -> int:
         results = []
-        for station in self.breakout.stations_hex_paths:
-            data = initialize_or_get_state(self.breakout, station)
+        for data in self.breakout:
             results.append(get_or_write_check(data, "date_valid", check_time_valid))
 
         return int((results.count(True) / len(results)) * 100)
@@ -183,8 +179,7 @@ class ResultAggregator:
     @cached_property
     def time_range(self) -> int:
         results = []
-        for station in self.breakout.stations_hex_paths:
-            data = initialize_or_get_state(self.breakout, station)
+        for data in self.breakout:
             results.append(
                 get_or_write_check(
                     data,
@@ -244,8 +239,7 @@ class ResultAggregator:
     @cached_property
     def info_number_bottles(self):
         result = []
-        for station in self.breakout.stations_hex_paths:
-            data = initialize_or_get_state(self.breakout, station)
+        for data in self.breakout:
             result.append("bl" in data)
 
         return Info(
@@ -261,8 +255,7 @@ class ResultAggregator:
         # There are also two code paths, one parses the xmlcon directly the other uses seabird software
         # We are going to use the seabird method here since it was the default in what was provided
         model = ""
-        for station in self.breakout.stations_hex_paths:
-            data = initialize_or_get_state(self.breakout, station)
+        for data in self.breakout:
             conreport = get_or_write_derived_file(data, "conreport", make_conreport)
             model = get_model(conreport.item()) or ""
 
@@ -271,8 +264,7 @@ class ResultAggregator:
     @cached_property
     def info_number_casts_with_nav_all_scans(self):
         number = 0
-        for station in self.breakout.stations_hex_paths:
-            data = initialize_or_get_state(self.breakout, station)
+        for data in self.breakout:
             if (
                 "hdr" in data
                 and "Store Lat/Lon Data = Append to Every Scan" in data.hdr.item()
@@ -308,7 +300,7 @@ class ResultAggregator:
     def info_casts_with_temp_sensor_sn_problems(self):
         problem_casts = []
         for station in self.breakout.stations_hex_paths:
-            data = initialize_or_get_state(self.breakout, station)
+            data = self.breakout[station]
             conreport = get_or_write_derived_file(data, "conreport", make_conreport)
             models = _conreport_sn_getter(conreport.item(), "Temperature")
             sn = _hdr_sn_getter(data.hdr.item(), "Temperature")
@@ -324,7 +316,7 @@ class ResultAggregator:
     def info_casts_with_cond_sensor_sn_problems(self):
         problem_casts = []
         for station in self.breakout.stations_hex_paths:
-            data = initialize_or_get_state(self.breakout, station)
+            data = self.breakout[station]
             conreport = get_or_write_derived_file(data, "conreport", make_conreport)
             models = _conreport_sn_getter(conreport.item(), "Conductivity")
             sn = _hdr_sn_getter(data.hdr.item(), "Conductivity")
@@ -340,7 +332,7 @@ class ResultAggregator:
     def info_casts_with_bad_nav(self):
         problem_casts = []
         for station in self.breakout.stations_hex_paths:
-            data = initialize_or_get_state(self.breakout, station)
+            data = self.breakout[station]
             if not get_or_write_check(data, "lat_lon_valid", check_lat_lon_valid):
                 problem_casts.append(station.stem)
         return Info(
@@ -353,7 +345,7 @@ class ResultAggregator:
     def info_casts_failed_nav_bounds(self):
         problem_casts = []
         for station in self.breakout.stations_hex_paths:
-            data = initialize_or_get_state(self.breakout, station)
+            data = self.breakout[station]
             if not get_or_write_check(
                 data, "lat_lon_range", check_lat_lon, bbox=self.breakout.bbox
             ):

@@ -1,13 +1,14 @@
 from pathlib import Path
 from logging import getLogger
-from typing import Callable, Protocol, Any
+from typing import Callable, Protocol, Any, TYPE_CHECKING
 
 import xarray as xr
 import numpy as np
 
 from odf.sbe import read_hex
 
-from r2r_ctd.breakout import Breakout
+if TYPE_CHECKING:
+    from r2r_ctd.breakout import Breakout
 
 R2R_QC_VARNAME = "r2r_qc"
 
@@ -20,12 +21,12 @@ class CheckFunc(Protocol):
 
 def write_ds_r2r(ds: xr.Dataset) -> None:
     path = ds.attrs.pop("__path")
-    ds.to_netcdf(path)
+    ds.to_netcdf(path, mode="a")
     logger.debug(f"State saved to {path}")
     ds.attrs["__path"] = path
 
 
-def get_state_path(breakout: Breakout, hex_path: Path) -> Path:
+def get_state_path(breakout: "Breakout", hex_path: Path) -> Path:
     nc_dir = breakout.path / "proc" / "nc"
 
     if not nc_dir.exists():
@@ -37,7 +38,7 @@ def get_state_path(breakout: Breakout, hex_path: Path) -> Path:
     return nc_dir / nc_fname
 
 
-def get_xml_qa_path(breakout: Breakout) -> Path:
+def get_xml_qa_path(breakout: "Breakout") -> Path:
     xml_qa_name = breakout.qa_template_path.with_suffix(".xml").name
 
     qa_dir = breakout.path / "proc"
@@ -46,12 +47,12 @@ def get_xml_qa_path(breakout: Breakout) -> Path:
     return qa_dir / xml_qa_name
 
 
-def initialize_or_get_state(breakout: Breakout, hex_path: Path) -> xr.Dataset:
+def initialize_or_get_state(breakout: "Breakout", hex_path: Path) -> xr.Dataset:
     state_path = get_state_path(breakout, hex_path)
 
     if state_path.exists():
         logger.debug(f"Found existing state file: {state_path}, skipping read_hex")
-        ds = xr.load_dataset(state_path)
+        ds = xr.open_dataset(state_path, mode="a")
         ds.attrs["__path"] = state_path
         return ds
 
