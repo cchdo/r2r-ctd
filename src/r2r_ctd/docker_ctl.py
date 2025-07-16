@@ -7,25 +7,34 @@ from odf.sbe.io import string_loader
 
 import docker
 
-
 logger = getLogger(__name__)
 
-client = docker.from_env()
-tmpdir = TemporaryDirectory()
-container = client.containers.run(
-    "r2r/sbe",
-    auto_remove=True,
-    detach=True,
-    volumes={str(tmpdir.name): {"bind": "/.wine/drive_c/proc", "mode": "rw"}},
-)
+_container = None # singleton of the sbe container
+_tmpdir = TemporaryDirectory() # singleton 
+
+def get_container():
+    global _container
+    if _container is not None:
+        return _container
+    client = docker.from_env()
+    _container = client.containers.run(
+        "r2r/sbe",
+        auto_remove=True,
+        detach=True,
+        volumes={str(_tmpdir.name): {"bind": "/.wine/drive_c/proc", "mode": "rw"}},
+        labels=["us.rvdata.ctd-proc"]
+    )
 
 
-def _kill_container():
-    print(f"attempting to kill wine container: {container.name}")
-    container.kill()
+
+    def _kill_container():
+        logger.info(f"attempting to kill wine container: {_container.name}")
+        _container.kill()
 
 
-atexit.register(_kill_container)
+    atexit.register(_kill_container)
+
+    return _container
 
 conreport_sh = r"""export DISPLAY=:1
 export HODLL=libwow64fex.dll
@@ -41,7 +50,9 @@ exit 0;
 
 
 def run_conreport(fname: str, xmlcon: str):
-    work_dir = Path(tmpdir.name)
+    container = get_container()
+
+    work_dir = Path(_tmpdir.name)
     sh = work_dir / "sh" / "conreport.sh"
     if sh.exists():
         sh.unlink()
