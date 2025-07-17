@@ -2,11 +2,13 @@ from datetime import datetime
 from logging import getLogger
 
 from r2r_ctd.docker_ctl import run_conreport
+from r2r_ctd.sbe import sensors_con_to_psa, datcnv_allsensors, datcnv_template
 
 from odf.sbe import accessors  # noqa: F401
 from odf.sbe.parsers import parse_hdr
 
 import xarray as xr
+from lxml import etree
 
 logger = getLogger(__name__)
 
@@ -119,6 +121,20 @@ def get_model(conreport: str) -> str | None:
         return "SBE19"
 
 
+def _conreport_extract_sensors(conreport: str) -> list[str]:
+    sensors = []
+    for line in conreport.splitlines():
+        try:
+            section, title = line.split(")", maxsplit=1)
+            section = int(section)
+            _, sensor = title.split(",", maxsplit=1)
+            sensors.append(sensor.strip())
+        except ValueError:
+            pass
+
+    return sensors
+
+
 def _conreport_sn_getter(conreport: str, instrument: str) -> set[str]:
     section = 0
     title = ""
@@ -149,3 +165,39 @@ def _conreport_sn_getter(conreport: str, instrument: str) -> set[str]:
 def _hdr_sn_getter(hdr: str, instrument: str) -> str | None:
     header = parse_hdr(hdr)
     return header.get(f"{instrument} SN")
+
+
+def make_datcnv_psa(conreport: str) -> str:
+    allsensors = datcnv_allsensors()
+    template = datcnv_template()
+
+    calc_array = []
+    for sensor in _conreport_extract_sensors(conreport):
+        if sensor == "Free":
+            continue
+        if sensor not in sensors_con_to_psa:
+            ...
+            # something new? this needs an update procedure...
+            continue
+
+        psa_sensors = sensors_con_to_psa[sensor]
+        for psa_sensor in psa_sensors:
+            calc_array.extend(
+                allsensors.xpath(
+                    "//CalcArrayItem[./Calc/FullName[@value=$psa_sensor]]",
+                    psa_sensor=psa_sensor,
+                )
+            )
+    for index, item in enumerate(calc_array):
+        item.attrib["index"] = str(index)
+
+    template.find(".//CalcArray").extend(calc_array)
+    template.find(".//CalcArray").attrib["Size"] = str(len(calc_array))
+
+    return etree.tostring(
+        template,
+        pretty_print=True,
+        xml_declaration=True,
+        method="xml",
+        encoding="UTF-8",
+    ).decode()

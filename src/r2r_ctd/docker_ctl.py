@@ -72,15 +72,14 @@ def run_conreport(fname: str, xmlcon: str):
     outdir.mkdir(exist_ok=True, parents=True)
 
     conreport_logs = container.exec_run(
-        'su -c "/.wine/drive_c/proc/sh/conreport.sh" abc',
-        demux=True
+        'su -c "/.wine/drive_c/proc/sh/conreport.sh" abc', demux=True
     )
     try:
-        logger.debug(conreport_logs.output[1].decode()) # Stderr
+        logger.debug(conreport_logs.output[1].decode())  # Stderr
     except IndexError:
         pass
 
-    logger.info(conreport_logs.output[0].decode()) # stdout
+    logger.info(conreport_logs.output[0].decode())  # stdout
 
     out_path = outdir / infile.with_suffix(".txt").name
 
