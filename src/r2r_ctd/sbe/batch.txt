@@ -1,0 +1,10 @@
+@ blank SBEbatch processing file
+@ 20240126 CJS added call to derive to add density to output.
+@    1        2          3          4             5           6                 7       
+@ input file, outut dir, con file, datcnv.psa, binavg.psa, derive.psa, infile for binavg
+
+datcnv /i%1 /o%2 /c%3 /p%4 
+
+derive /i%7 /o%2 /c%3 /p%6 
+
+binavg /i%7 /o%2 /p%5 /a_1db

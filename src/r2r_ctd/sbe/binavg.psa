@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Bin_Average >
+  <Version value="7.22.5" />
+  <ServerName value="Bin Average" />
+  <InputDir value="C:\MV0902_processed" />
+  <InputFileArray size="1" GrowBy="-1" >
+    <ArrayItem index="0" value="ph2_ctd_003.cnv" />
+  </InputFileArray>
+  <OutputDir value="C:\MV0902_processed" />
+  <NameAppend value="" />
+  <OutputFile value="" />
+  <LastProcessed value="0" />
+  <BinType value="1" />
+  <BinSize value="1.000000" />
+  <IncludeNumberScans value="1" />
+  <ExcludeMarkedBad value="1" />
+  <ScansToSkip value="0" />
+  <ScansToOmit value="0" />
+  <MinScansPerBin value="1" />
+  <MaxScansPerBin value="2147483647" />
+  <CastToProcess value="0" high="2" low="0" initialValue="0" />
+  <IncludeSurfaceBin value="1" />
+  <SurfaceBinMinVal value="0.000000" />
+  <SurfaceBinMaxVal value="0.000000" />
+  <SurfaceBinVal value="0.000000" />
+</Bin_Average>

@@ -1,0 +1,383 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+  <CalcArrayItem index="1" CalcID="1" >
+    <Calc UnitID="29" Ordinal="0" >
+      <FullName value="Altimeter [m]" />
+    </Calc>
+  </CalcArrayItem>
+  <CalcArrayItem index="2" CalcID="12" >
+    <Calc UnitID="58" Ordinal="0" >
+      <FullName value="Conductivity [S/m]" />
+    </Calc>
+  </CalcArrayItem>
+  <CalcArrayItem index="3" CalcID="21" >
+    <Calc UnitID="-1" Ordinal="0" >
+      <FullName value="Fluorescence, Biospherical Natural" />
+    </Calc>
+  </CalcArrayItem>
+  <CalcArrayItem index="4" CalcID="24" >
+    <Calc UnitID="60" Ordinal="0" >
+      <FullName value="Fluorescence, Chelsea Aqua 3 Chl Con [ug/l]" />
+    </Calc>
+  </CalcArrayItem>
+  <CalcArrayItem index="5" CalcID="25" >
+    <Calc UnitID="60" Ordinal="0" >
+      <FullName value="Fluorescence, Chelsea Mini Chl Con [ug/l]" />
+    </Calc>
+  </CalcArrayItem>
+  <CalcArrayItem index="6" CalcID="113" >
+    <Calc UnitID="60" Ordinal="0" >
+      <FullName value="Fluorescence, Chelsea UV Aquatracka [ug/l]" />
+    </Calc>
+  </CalcArrayItem>
+  <CalcArrayItem index="7" CalcID="26" >
+    <Calc UnitID="-1" Ordinal="0" >
+      <FullName value="Fluorescence, Dr. Haardt Chlorophyll a" />
+    </Calc>
+  </CalcArrayItem>
+  <CalcArrayItem index="8" CalcID="27" >
+    <Calc UnitID="-1" Ordinal="0" >
+      <FullName value="Fluorescence, Dr. Haardt Phycoerythrin" />
+    </Calc>
+  </CalcArrayItem>
+  <CalcArrayItem index="9" CalcID="28" >
+    <Calc UnitID="-1" Ordinal="0" >
+      <FullName value="Fluorescence, Dr. Haardt Yellow Sub" />
+    </Calc>
+  </CalcArrayItem>
+  <CalcArrayItem index="10" CalcID="29" >
+    <Calc UnitID="-1" Ordinal="0" >
+      <FullName value="Fluorescence, Seapoint" />
+    </Calc>
+  </CalcArrayItem>
+  <CalcArrayItem index="11" CalcID="100" >
+    <Calc UnitID="-1" Ordinal="0" >
+      <FullName value="Fluorescence, Seapoint Rhodamine" />
+    </Calc>
+  </CalcArrayItem>
+  <CalcArrayItem index="12" CalcID="30" >
+    <Calc UnitID="-1" Ordinal="0" >
+      <FullName value="Fluorescence, Seatech" />
+    </Calc>
+  </CalcArrayItem>
+  <CalcArrayItem index="13" CalcID="31" >
+    <Calc UnitID="-1" Ordinal="0" >
+      <FullName value="Fluorescence, Turner 10-005" />
+    </Calc>
+  </CalcArrayItem>
+  <CalcArrayItem index="14" CalcID="32" >
+    <Calc UnitID="-1" Ordinal="0" >
+      <FullName value="Fluorescence, Turner 10-Au-005" />
+    </Calc>
+  </CalcArrayItem>
+  <CalcArrayItem index="15" CalcID="91" >
+    <Calc UnitID="-1" Ordinal="0" >
+      <FullName value="Fluorescence, Turner SCUFA [RFU]" />
+      <SCUFA_Units value="1" />
+    </Calc>
+  </CalcArrayItem>
+  <CalcArrayItem index="16" CalcID="33" >
+    <Calc UnitID="24" Ordinal="0" >
+      <FullName value="Fluorescence, WET Labs AC3 Absorption [1/m]" />
+    </Calc>
+  </CalcArrayItem>
+  <CalcArrayItem index="17" CalcID="101" >
+    <Calc UnitID="38" Ordinal="0" >
+      <FullName value="Fluorescence, WET Labs CDOM [mg/m^3]" />
+    </Calc>
+  </CalcArrayItem>
+  <CalcArrayItem index="18" CalcID="93" >
+    <Calc UnitID="38" Ordinal="0" >
+      <FullName value="Fluorescence, WET Labs ECO-AFL/FL [mg/m^3]" />
+    </Calc>
+  </CalcArrayItem>
+  <CalcArrayItem index="19" CalcID="35" >
+    <Calc UnitID="38" Ordinal="0" >
+      <FullName value="Fluorescence, WET Labs WETstar [mg/m^3]" />
+    </Calc>
+  </CalcArrayItem>
+  <CalcArrayItem index="20" CalcID="102" >
+    <Calc UnitID="65" Ordinal="0" >
+      <FullName value="GTD-DO Pressure [mb]" />
+    </Calc>
+  </CalcArrayItem>
+  <CalcArrayItem index="21" CalcID="104" >
+    <Calc UnitID="65" Ordinal="0" >
+      <FullName value="GTD-N2 Pressure [mb]" />
+    </Calc>
+  </CalcArrayItem>
+  <CalcArrayItem index="22" CalcID="106" >
+    <Calc UnitID="64" Ordinal="0" >
+      <FullName value="Methane Conc., Franatech METS [umol/l]" />
+    </Calc>
+  </CalcArrayItem>
+  <CalcArrayItem index="23" CalcID="107" >
+    <Calc UnitID="7" Ordinal="0" >
+      <FullName value="Methane Gas Temp., Franatech METS [deg C]" />
+    </Calc>
+  </CalcArrayItem>
+  <CalcArrayItem index="25" CalcID="46" >
+    <Calc UnitID="21" Ordinal="0" >
+      <FullName value="OBS, Chelsea Nephelometer [FTU]" />
+    </Calc>
+  </CalcArrayItem>
+  <CalcArrayItem index="26" CalcID="47" >
+    <Calc UnitID="-1" Ordinal="0" >
+      <FullName value="OBS, Dr. Haardt Turbidity" />
+    </Calc>
+  </CalcArrayItem>
+  <CalcArrayItem index="27" CalcID="48" >
+    <Calc UnitID="-1" Ordinal="0" >
+      <FullName value="OBS, IFREMER" />
+    </Calc>
+  </CalcArrayItem>
+  <CalcArrayItem index="28" CalcID="49" >
+    <Calc UnitID="21" Ordinal="0" >
+      <FullName value="Turbidity, Seapoint [FTU]" />
+    </Calc>
+  </CalcArrayItem>
+  <CalcArrayItem index="29" CalcID="50" >
+    <Calc UnitID="-1" Ordinal="0" >
+      <FullName value="OBS, Seatech LS6000" />
+    </Calc>
+  </CalcArrayItem>
+  <CalcArrayItem index="30" CalcID="94" >
+    <Calc UnitID="45" Ordinal="0" >
+      <FullName value="OBS, Turner SCUFA [NTU]" />
+    </Calc>
+  </CalcArrayItem>
+  <CalcArrayItem index="31" CalcID="52" >
+    <Calc UnitID="59" Ordinal="0" >
+      <FullName value="Oxygen Current, Beckman/YSI [uA]" />
+    </Calc>
+  </CalcArrayItem>
+  <CalcArrayItem index="32" CalcID="53" >
+    <Calc UnitID="40" Ordinal="0" >
+      <FullName value="Oxygen, IOW [ml/l]" />
+    </Calc>
+  </CalcArrayItem>
+  <CalcArrayItem index="33" CalcID="55" >
+    <Calc UnitID="40" Ordinal="0" >
+      <FullName value="Oxygen, SBE 43 [ml/l]" />
+        <WindowSize value="2.000000" />
+        <ApplyHysteresisCorrection value="0" />
+        <ApplyTauCorrection value="1" />
+    </Calc>
+  </CalcArrayItem>
+  <CalcArrayItem index="34" CalcID="56" >
+    <Calc UnitID="7" Ordinal="0" >
+      <FullName value="Oxygen Temperature, Beckman/YSI [deg C]" />
+    </Calc>
+  </CalcArrayItem>
+  <CalcArrayItem index="35" CalcID="53" >
+    <Calc UnitID="40" Ordinal="0" >
+      <FullName value="Oxygen, IOW [ml/l]" />
+    </Calc>
+  </CalcArrayItem>
+  <CalcArrayItem index="36" CalcID="58" >
+    <Calc UnitID="42" Ordinal="0" >
+      <FullName value="Oxidation Reduction Potential [mV]" />
+    </Calc>
+  </CalcArrayItem>
+  <CalcArrayItem index="37" CalcID="59" >
+    <Calc UnitID="-1" Ordinal="0" >
+      <FullName value="PAR/Irradiance, Biospherical/Licor" />
+      <PAR_Units value="0" />
+    </Calc>
+  </CalcArrayItem>
+  <CalcArrayItem index="38" CalcID="60" >
+    <Calc UnitID="-1" Ordinal="0" >
+      <FullName value="pH" />
+    </Calc>
+  </CalcArrayItem>
+  <CalcArrayItem index="39" CalcID="65" >
+    <Calc UnitID="3" Ordinal="0" >
+      <FullName value="Pressure, Digiquartz [db]" />
+    </Calc>
+  </CalcArrayItem>
+  <CalcArrayItem index="40" CalcID="68" >
+    <Calc UnitID="7" Ordinal="0" >
+      <FullName value="Pressure Temperature [deg C]" />
+    </Calc>
+  </CalcArrayItem>
+  <CalcArrayItem index="41" CalcID="66" >
+    <Calc UnitID="28" Ordinal="0" >
+      <FullName value="Pressure, FGP [KPa]" />
+    </Calc>
+  </CalcArrayItem>
+  <CalcArrayItem index="42" CalcID="114" >
+    <Calc UnitID="3" Ordinal="0" >
+      <FullName value="Pressure, SBE 50 [db]" />
+    </Calc>
+  </CalcArrayItem>
+  <CalcArrayItem index="43" CalcID="67" >
+    <Calc UnitID="3" Ordinal="0" >
+      <FullName value="Pressure, Strain Gauge [db]" />
+    </Calc>
+  </CalcArrayItem>
+  <CalcArrayItem index="44" CalcID="76" >
+    <Calc UnitID="32" Ordinal="0" >
+      <FullName value="Sound Velocity, IOW [m/s]" />
+    </Calc>
+  </CalcArrayItem>
+  <CalcArrayItem index="45" CalcID="77" >
+    <Calc UnitID="-1" Ordinal="0" >
+      <FullName value="SPAR/Surface Irradiance" />
+      <SPAR_Units value="0" />
+    </Calc>
+  </CalcArrayItem>
+  <CalcArrayItem index="46" CalcID="109" >
+    <Calc UnitID="24" Ordinal="0" >
+      <FullName value="LISST-25A, Beam C [1/m]" />
+    </Calc>
+  </CalcArrayItem>
+  <CalcArrayItem index="47" CalcID="110" >
+    <Calc UnitID="46" Ordinal="0" >
+      <FullName value="LISST-25A, Optical Transmission [%]" />
+    </Calc>
+  </CalcArrayItem>
+  <CalcArrayItem index="48" CalcID="81" >
+    <Calc UnitID="6" Ordinal="0" >
+      <FullName value="Temperature [ITS-90, deg C]" />
+    </Calc>
+  </CalcArrayItem>
+  <CalcArrayItem index="49" CalcID="96" >
+    <Calc UnitID="6" Ordinal="0" >
+      <FullName value="Temperature, SBE 38 [ITS-90, deg C]" />
+    </Calc>
+  </CalcArrayItem>
+  <CalcArrayItem index="50" CalcID="5" >
+    <Calc UnitID="46" Ordinal="0" >
+      <FullName value="Beam Transmission, Chelsea/Seatech [%]" />
+    </Calc>
+  </CalcArrayItem>
+  <CalcArrayItem index="51" CalcID="6" >
+    <Calc UnitID="46" Ordinal="0" >
+      <FullName value="Beam Transmission, WET Labs AC3 [%]" />
+    </Calc>
+  </CalcArrayItem>
+  <CalcArrayItem index="52" CalcID="87" >
+    <Calc UnitID="-1" Ordinal="0" >
+      <FullName value="Upoly 0, LISST-Deep" />
+      <CalcName value="LISST-Deep" />
+    </Calc>
+  </CalcArrayItem>
+  <CalcArrayItem index="52" CalcID="87" >
+    <Calc UnitID="-1" Ordinal="1" >
+      <FullName value="Upoly 1, SUNA" />
+      <CalcName value="SUNA" />
+    </Calc>
+  </CalcArrayItem>  
+  <CalcArrayItem index="53" CalcID="90" >
+    <Calc UnitID="44" Ordinal="0" >
+      <FullName value="Zaps [nmol]" />
+    </Calc>
+  </CalcArrayItem>
+  <CalcArrayItem index="55" CalcID="128" >
+    <Calc UnitID="40" Ordinal="0" >
+      <FullName value="Oxygen Optode, Aanderaa [ml/l]" />
+    </Calc>
+  </CalcArrayItem>
+  <CalcArrayItem index="56" CalcID="57" >
+    <Calc UnitID="23" Ordinal="0" >
+      <FullName value="Oxygen raw, SBE 43 [Hz]" />
+    </Calc>
+  </CalcArrayItem>
+  <CalcArrayItem index="57" CalcID="150" >
+    <Calc UnitID="45" Ordinal="0" >
+      <FullName value="Turbidity, WET Labs ECO [NTU]" />
+    </Calc>
+  </CalcArrayItem>
+  <CalcArrayItem index="58" CalcID="154" >
+    <Calc UnitID="69" Ordinal="0" >
+      <FullName value="Fluorescein, Turner Cyclops [ppb]" />
+    </Calc>
+  </CalcArrayItem>
+  <CalcArrayItem index="59" CalcID="151" >
+    <Calc UnitID="-1" Ordinal="0" >
+      <FullName value="Fluorescence, Seapoint Ultraviolet" />
+    </Calc>
+  </CalcArrayItem>
+  <CalcArrayItem index="60" CalcID="149" >
+    <Calc UnitID="71" Ordinal="0" >
+      <FullName value="Turbidity, WET Labs ECO BB [m^-1/sr]" />
+    </Calc>
+  </CalcArrayItem>
+  <CalcArrayItem index="61" CalcID="179" >
+    <Calc UnitID="46" Ordinal="0" >
+      <FullName value="Beam Transmission, WET Labs C-Star [%]" />
+    </Calc>
+  </CalcArrayItem>
+  <CalcArrayItem index="62" CalcID="183" >
+    <Calc UnitID="40" Ordinal="0" >
+      <FullName value="Oxygen, SBE 63 [ml/l]" />
+    </Calc>
+  </CalcArrayItem>
+  <CalcArrayItem index="63" CalcID="12" >
+    <Calc UnitID="58" Ordinal="1" >
+      <FullName value="Conductivity, 2 [S/m]" />
+    </Calc>
+  </CalcArrayItem>
+  <CalcArrayItem index="64" CalcID="81" >
+    <Calc UnitID="6" Ordinal="1" >
+      <FullName value="Temperature, 2 [ITS-90, deg C]" />
+    </Calc>
+  </CalcArrayItem>
+  <CalcArrayItem index="65" CalcID="55" >
+    <Calc UnitID="40" Ordinal="1" >
+      <FullName value="Oxygen, SBE 43, 2 [ml/l]" />
+        <WindowSize value="2.000000" />
+        <ApplyHysteresisCorrection value="0" />
+        <ApplyTauCorrection value="1" />
+    </Calc>
+  </CalcArrayItem>
+  <CalcArrayItem index="0" CalcID="39">
+    <Calc UnitID="4" Ordinal="0">
+      <FullName value="Latitude [deg]"/>
+    </Calc>
+  </CalcArrayItem>
+  <CalcArrayItem index="1" CalcID="40">
+    <Calc UnitID="4" Ordinal="0">
+      <FullName value="Longitude [deg]"/>
+    </Calc>
+  </CalcArrayItem>
+  <CalcArrayItem index="16" CalcID="69">
+    <Calc UnitID="-1" Ordinal="0">
+      <FullName value="Pump Status"/>
+    </Calc>
+  </CalcArrayItem>
+  <CalcArrayItem index="11" CalcID="70" >
+    <Calc UnitID="49" Ordinal="0" >
+      <FullName value="Salinity, Practical [PSU]" />
+    </Calc>
+  </CalcArrayItem>
+  <CalcArrayItem index="12" CalcID="70" >
+    <Calc UnitID="49" Ordinal="1" >
+      <FullName value="Salinity, Practical, 2 [PSU]" />
+    </Calc>
+  </CalcArrayItem> 
+  <CalcArrayItem index="6" CalcID="17" >
+      <Calc UnitID="31" Ordinal="0" >
+        <FullName value="Depth [salt water, m]" />
+        <Latitude value="32.000000" />
+      </Calc>
+  </CalcArrayItem> 
+  <CalcArrayItem index="1" CalcID="3" >
+    <Calc UnitID="24" Ordinal="0" >
+      <FullName value="Beam Attenuation, Chelsea/Seatech [1/m]" />
+    </Calc>
+  </CalcArrayItem>
+  <CalcArrayItem index="8" CalcID="55" >
+    <Calc UnitID="61" Ordinal="0" >
+      <FullName value="Oxygen, SBE 43 [umol/kg]" />
+      <WindowSize value="2.000000" />
+      <ApplyHysteresisCorrection value="0" />
+      <ApplyTauCorrection value="1" />
+    </Calc>
+  </CalcArrayItem>   
+  <CalcArrayItem index="13" CalcID="84" >
+    <Calc UnitID="52" Ordinal="0" >
+      <FullName value="Time, Elapsed [seconds]" />
+    </Calc>
+  </CalcArrayItem>
+</root>
