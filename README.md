@@ -19,9 +19,9 @@ Steps needed to do:
   - [X] exclude if looks like a deck test
   - [X] run conreport (dockerized sbe software)
   - [X] check if "all 3" files are present
-  - [ ] validate time against curise bounds
-  - [ ] validate lat/lon against cruise bounds
-  - [ ] collect "cast info" (there is a bunch that goes in here)
+  - [X] validate time against curise bounds
+  - [X] validate lat/lon against cruise bounds
+  - [X] collect "cast info" (there is a bunch that goes in here)
   - [ ] write a record in the geoCSV
   - [ ] make seabird output products (dockerized sbe software)
 
