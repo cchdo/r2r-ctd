@@ -124,6 +124,14 @@ def get_model(conreport: str) -> str | None:
 def _conreport_extract_sensors(conreport: str) -> list[str]:
     sensors = []
     for line in conreport.splitlines():
+        # there are 3 "virtual" sensors that get added if certain flags are set (position and time)
+        no_whitespace_line = line.replace(" ", "").lower()
+        if no_whitespace_line == "nmeapositiondataadded:yes":
+            sensors.append("Latitude")
+            sensors.append("Longitude")
+        if no_whitespace_line == "nmeatimeadded:yes":
+            sensors.append("ETime")
+
         try:
             section, title = line.split(")", maxsplit=1)
             section = int(section)
@@ -165,6 +173,12 @@ def _conreport_sn_getter(conreport: str, instrument: str) -> set[str]:
 def _hdr_sn_getter(hdr: str, instrument: str) -> str | None:
     header = parse_hdr(hdr)
     return header.get(f"{instrument} SN")
+
+
+def make_derive_psa(conreport: str) -> str: ...
+
+
+def make_binavg_psa(conreport: str) -> str: ...
 
 
 def make_datcnv_psa(conreport: str) -> str:
