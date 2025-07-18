@@ -2,6 +2,7 @@ from pathlib import Path
 from logging import getLogger
 from tempfile import TemporaryDirectory
 import atexit
+from typing import cast, Mapping
 
 from odf.sbe.io import string_loader
 
@@ -26,6 +27,11 @@ def get_container():
         detach=True,
         volumes={str(_tmpdir.name): {"bind": "/.wine/drive_c/proc", "mode": "rw"}},
         labels=labels,
+        # The following binds an ephemeral port to 127.0.0.1 and not 0.0.0.0
+        # we are doing this for security reasons
+        # looks like the python typeshed is not correct here so I am casting to
+        # something it knows about
+        ports=cast(Mapping[str, None], {"3000/tcp": ("127.0.0.1",)}),
     )
     logger.info(f"Container launched as {_container.name} with labels: {labels}")
 
@@ -43,50 +49,49 @@ export HODLL=libwow64fex.dll
 export WINEPREFIX=/.wine
 
 cd /.wine/drive_c/;
-for file in proc/in/*
+for file in proc/$TMPDIR_R2R/in/*
 do
-  wine "Program Files (x86)/Sea-Bird/SBEDataProcessing-Win32/ConReport.exe" "${file}" "C:\proc\out"
+  wine "Program Files (x86)/Sea-Bird/SBEDataProcessing-Win32/ConReport.exe" "${file}" "C:\proc\\${TMPDIR_R2R}\out"
 done
 exit 0;
 """
 
 
-def run_conreport(fname: str, xmlcon: str):
+def run_conreport(fname: str, xmlcon: bytes):
     container = get_container()
 
-    work_dir = Path(_tmpdir.name)
-    sh = work_dir / "sh" / "conreport.sh"
-    if sh.exists():
-        sh.unlink()
-    sh.parent.mkdir(exist_ok=True, parents=True)
-    sh.write_text(conreport_sh)
-    sh.chmod(0o555)
+    with TemporaryDirectory(dir=_tmpdir.name) as condir:
+        work_dir = Path(condir)
+        sh = work_dir / "sh" / "conreport.sh"
+        if sh.exists():
+            sh.unlink()
+        sh.parent.mkdir(exist_ok=True, parents=True)
+        sh.write_text(conreport_sh)
+        sh.chmod(0o555)
 
-    indir = work_dir / "in"
-    indir.mkdir(exist_ok=True, parents=True)
+        indir = work_dir / "in"
+        indir.mkdir(exist_ok=True, parents=True)
 
-    infile = indir / fname
-    infile.write_bytes(xmlcon)
+        infile = indir / fname
+        infile.write_bytes(xmlcon)
 
-    outdir = work_dir / "out"
-    outdir.mkdir(exist_ok=True, parents=True)
+        outdir = work_dir / "out"
+        outdir.mkdir(exist_ok=True, parents=True)
 
-    conreport_logs = container.exec_run(
-        'su -c "/.wine/drive_c/proc/sh/conreport.sh" abc', demux=True
-    )
-    try:
-        logger.debug(conreport_logs.output[1].decode())  # Stderr
-    except IndexError:
-        pass
+        conreport_logs = container.exec_run(
+            f'su -c "/.wine/drive_c/proc/{work_dir.name}/sh/conreport.sh" abc',
+            demux=True,
+            environment={"TMPDIR_R2R": work_dir.name},
+        )
+        try:
+            logger.debug(conreport_logs.output[1].decode())  # Stderr
+        except IndexError:
+            pass
 
-    logger.info(conreport_logs.output[0].decode())  # stdout
+        logger.info(conreport_logs.output[0].decode())  # stdout
 
-    out_path = outdir / infile.with_suffix(".txt").name
+        out_path = outdir / infile.with_suffix(".txt").name
 
-    conreport = string_loader(out_path, "conreport").conreport
+        conreport = string_loader(out_path, "conreport").conreport
 
-    # try to clean up
-    infile.unlink(missing_ok=True)
-    out_path.unlink(missing_ok=True)
-
-    return conreport
+        return conreport
