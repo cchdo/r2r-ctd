@@ -2,15 +2,15 @@
 <Derive >
   <Version value="7.26.7.129" />
   <ServerName value="Derive" />
-  <InstrumentPath value="Z:\data\r2r\cruise\BH18-05\fileset\132330\data\STATION 4_90M.XMLCON" />
+  <InstrumentPath value="" />
   <InstrumentMatch value="0" />
-  <InputDir value="Z:\data\local\cruise\BH18-05\products\r2rctd" />
+  <InputDir value="" />
   <InputFileArray size="1" GrowBy="-1" >
-    <ArrayItem index="0" value="station 4_90m_24Hz.cnv" />
+    <ArrayItem index="0" value="" />
   </InputFileArray>
-  <OutputDir value="Z:\data\local\cruise\BH18-05\products\r2rctd" />
+  <OutputDir value="" />
   <NameAppend value="" />
-  <OutputFile value="station 4_90m_24Hz.cnv" />
+  <OutputFile value="" />
   <LastProcessed value="0" />
   <CalcArray Size="1" >
     <CalcArrayItem index="0" CalcID="15" >

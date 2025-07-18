@@ -2,13 +2,13 @@
 <Derive >
   <Version value="7.26.7.129" />
   <ServerName value="Derive" />
-  <InstrumentPath value="Y:\work\SBEprocess\post2018\tst_data\AR43_006.XMLCON" />
+  <InstrumentPath value="" />
   <InstrumentMatch value="0" />
-  <InputDir value="Y:\work\SBEprocess\post2018\tst_data" />
+  <InputDir value="" />
   <InputFileArray size="1" GrowBy="-1" >
-    <ArrayItem index="0" value="AR43_006.cnv" />
+    <ArrayItem index="0" value="" />
   </InputFileArray>
-  <OutputDir value="Y:\work\SBEprocess\post2018\tst_data" />
+  <OutputDir value="" />
   <NameAppend value="" />
   <OutputFile value="" />
   <LastProcessed value="0" />
