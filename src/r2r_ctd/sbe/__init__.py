@@ -20,3 +20,11 @@ def datcnv_allsensors():
 
 def datcnv_template():
     return _xml_loader("sbe/datcnv_template.xml")
+
+
+def binavg_template():
+    return _xml_loader("sbe/binavg_template.xml")
+
+
+def derive_template():
+    return _xml_loader("sbe/derive_template.xml")

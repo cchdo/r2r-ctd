@@ -2,15 +2,24 @@ from datetime import datetime
 from logging import getLogger
 
 from r2r_ctd.docker_ctl import run_conreport
-from r2r_ctd.sbe import sensors_con_to_psa, datcnv_allsensors, datcnv_template
+from r2r_ctd.sbe import (
+    binavg_template,
+    derive_template,
+    sensors_con_to_psa,
+    datcnv_allsensors,
+    datcnv_template,
+)
 
 from odf.sbe import accessors  # noqa: F401
 from odf.sbe.parsers import parse_hdr
 
 import xarray as xr
 from lxml import etree
+from lxml.builder import ElementMaker
 
 logger = getLogger(__name__)
+
+E = ElementMaker()
 
 
 def _parse_coord(coord: str) -> float | None:
@@ -175,10 +184,45 @@ def _hdr_sn_getter(hdr: str, instrument: str) -> str | None:
     return header.get(f"{instrument} SN")
 
 
-def make_derive_psa(conreport: str) -> str: ...
+def make_derive_psa(conreport: str) -> str:
+    template = derive_template()
+    sensors = _conreport_extract_sensors(conreport)
+    is_dual_channel = {"Temperature, 2", "Conductivity, 2"} <= set(sensors)
+    logger.info(f"Cast is dual channel: {is_dual_channel}")
+
+    if is_dual_channel:
+        logger.info("Cast is dual channel adding second density to derive psa")
+        second_density = E.CalcArrayItem(
+            E.Calc(
+                E.FullName(value="Density, 2 [density, kg/m^3]"),
+                UnitID="11",
+                Ordinal="1",
+            ),
+            index="1",
+            CalcID="15",
+        )
+        template.find(".//CalcArray").append(second_density)
+        template.find(".//CalcArray").attrib["Size"] = "2"
+
+    return etree.tostring(
+        template,
+        pretty_print=True,
+        xml_declaration=True,
+        method="xml",
+        encoding="UTF-8",
+    ).decode()
 
 
-def make_binavg_psa(conreport: str) -> str: ...
+def make_binavg_psa(conreport: str) -> str:
+    """This is a noop, but included for a consistent API"""
+    template = binavg_template()
+    return etree.tostring(
+        template,
+        pretty_print=True,
+        xml_declaration=True,
+        method="xml",
+        encoding="UTF-8",
+    ).decode()
 
 
 def make_datcnv_psa(conreport: str) -> str:
