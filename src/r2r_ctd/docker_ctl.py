@@ -8,6 +8,9 @@ from odf.sbe.io import string_loader
 
 import docker
 
+from r2r_ctd.state import NamedFile
+from r2r_ctd.sbe import batch
+
 logger = getLogger(__name__)
 
 _container = None  # singleton of the sbe container
@@ -57,7 +60,7 @@ exit 0;
 """
 
 
-def run_conreport(fname: str, xmlcon: bytes):
+def run_conreport(xmlcon: NamedFile):
     container = get_container()
 
     with TemporaryDirectory(dir=_tmpdir.name) as condir:
@@ -72,7 +75,7 @@ def run_conreport(fname: str, xmlcon: bytes):
         indir = work_dir / "in"
         indir.mkdir(exist_ok=True, parents=True)
 
-        infile = indir / fname
+        infile = indir / xmlcon.name
         infile.write_bytes(xmlcon)
 
         outdir = work_dir / "out"
@@ -95,3 +98,67 @@ def run_conreport(fname: str, xmlcon: bytes):
         conreport = string_loader(out_path, "conreport").conreport
 
         return conreport
+
+sbebatch_sh = r"""export DISPLAY=:1
+export HODLL=libwow64fex.dll
+export WINEPREFIX=/.wine
+
+echo $XDG_RUNTIME_DIR
+
+# if a previous run fails, some state is recorded that prevents a clean start again (via UI popup) , so we just remove that
+rm -rf /.wine/drive_c/users/abc/AppData/Local/Sea-Bird/
+cd /.wine/drive_c/proc/${TMPDIR_R2R}/in;
+wine "/.wine/drive_c/Program Files (x86)/Sea-Bird/SBEDataProcessing-Win32/SBEBatch.exe" batch.txt ${R2R_HEXNAME} ../out ${R2R_XMLCON} ../out/${R2R_TMPCNV}
+exit 0;
+"""
+
+def run_sbebatch(hex: NamedFile, xmlcon: NamedFile, datcnv: NamedFile, derive: NamedFile, binavg: NamedFile):
+    container = get_container()
+
+    with TemporaryDirectory(dir=_tmpdir.name) as condir:
+        work_dir = Path(condir)
+        sh = work_dir / "sh" / "sbebatch.sh"
+        if sh.exists():
+            sh.unlink()
+        sh.parent.mkdir(exist_ok=True, parents=True)
+        sh.write_text(sbebatch_sh)
+        sh.chmod(0o555)
+
+        indir = work_dir / "in"
+        indir.mkdir(exist_ok=True, parents=True)
+
+        batch_file = indir / "batch.txt"
+        batch_file.write_text(batch)
+
+        for file in (hex, xmlcon, datcnv, derive, binavg):
+            infile = indir / file.name
+            infile.write_bytes(file)
+
+        hex_path = Path(hex.name)
+
+        outdir = work_dir / "out"
+        outdir.mkdir(exist_ok=True, parents=True)
+
+        batch_logs = container.exec_run(
+            f'su -c "/.wine/drive_c/proc/{work_dir.name}/sh/sbebatch.sh" abc',
+            demux=True,
+            environment={
+                "TMPDIR_R2R": work_dir.name,
+                "R2R_HEXNAME": hex.name,
+                "R2R_XMLCON": xmlcon.name,
+                "R2R_TMPCNV": hex_path.with_suffix(".cnv"),
+                },
+        )
+        stdout, stderr = batch_logs.output
+        if stderr is not None:
+            logger.debug(stderr.decode())
+        if stdout is not None:
+            logger.info(stdout.decode())
+
+
+        cnv_24hz = outdir / f"{hex_path.stem}_24hz.cnv"
+        cnv_1db = outdir / f"{hex_path.stem}_1db.cnv"
+
+        cnv_24hz = string_loader(cnv_24hz, "cnv_24hz").cnv_24hz
+        cnv_1db = string_loader(cnv_1db, "cnv_1db").cnv_1db
+        return {"cnv_24hz": cnv_24hz, "cnv_1db": cnv_1db}

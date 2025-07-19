@@ -29,6 +29,7 @@ def main(paths: tuple[Path, ...]):
         qa_xml = breakout.qa_template_xml
 
         ra = ResultAggregator(breakout)
+        ra.gen_cnvs()
 
         root = qa_xml.getroot()
         nsmap = root.nsmap

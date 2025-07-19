@@ -5,6 +5,7 @@ from lxml import etree
 
 sensors_con_to_psa = loads(read_text(r2r_ctd, "sbe/sensors.toml"))
 
+batch = read_text(r2r_ctd, "sbe/batch.txt")
 
 # This needs to be a function that returns a new
 # object because lxml et al. likes doing things by

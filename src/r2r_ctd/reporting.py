@@ -18,6 +18,7 @@ from r2r_ctd.derived import (
     _hdr_sn_getter,
     get_model,
     make_conreport,
+    make_cnvs,
 )
 from r2r_ctd.state import (
     get_or_write_check,
@@ -355,6 +356,11 @@ class ResultAggregator:
             name="Casts that Failed NAV Boundary Tests",
             uom="List",
         )
+
+    def gen_cnvs(self):
+        for station in self.breakout.stations_hex_paths:
+            data = self.breakout[station]
+            cnvs = make_cnvs(data)
 
     @property
     def certificate(self):

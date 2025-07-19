@@ -14,6 +14,12 @@ R2R_QC_VARNAME = "r2r_qc"
 
 logger = getLogger(__name__)
 
+class NamedFile(bytes):
+    name: str
+    def __new__(cls, *args, name: str = ""):
+        b = super().__new__(cls, *args)
+        b.name = name
+        return b
 
 class CheckFunc(Protocol):
     def __call__(self, ds: xr.Dataset, **kwargs: Any) -> bool: ...

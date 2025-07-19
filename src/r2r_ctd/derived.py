@@ -1,7 +1,7 @@
 from datetime import datetime
 from logging import getLogger
 
-from r2r_ctd.docker_ctl import run_conreport
+from r2r_ctd.docker_ctl import run_conreport, run_sbebatch
 from r2r_ctd.sbe import (
     binavg_template,
     derive_template,
@@ -16,6 +16,8 @@ from odf.sbe.parsers import parse_hdr
 import xarray as xr
 from lxml import etree
 from lxml.builder import ElementMaker
+
+from r2r_ctd.state import NamedFile
 
 logger = getLogger(__name__)
 
@@ -68,7 +70,7 @@ def get_longitude(ds: xr.Dataset) -> float | None:
         return _parse_coord(value)
 
 
-def get_latitude(ds) -> float:
+def get_latitude(ds: xr.Dataset) -> float | None:
     """Get the cast latitude from NMEA header
 
     See the docstring for get_longitude for comment on original code"""
@@ -90,7 +92,7 @@ def _normalize_date_strings(date: str) -> str:
 def get_time(ds: xr.Dataset) -> float | None:
     """Gets the time from the hdr file
 
-    In the following prioirty order:
+    In the following priority order:
     * NMEA UTC (Time)
     * System UTC
     * System Upload Time
@@ -116,7 +118,8 @@ def get_time(ds: xr.Dataset) -> float | None:
 
 
 def make_conreport(ds: xr.Dataset):
-    return run_conreport(ds.xmlcon.attrs["filename"], ds.sbe.to_xmlcon())
+    xmlcon = NamedFile(ds.sbe.to_xmlcon(), name=ds.xmlcon.attrs["filename"])
+    return run_conreport(xmlcon)
 
 
 def get_model(conreport: str) -> str | None:
@@ -184,7 +187,7 @@ def _hdr_sn_getter(hdr: str, instrument: str) -> str | None:
     return header.get(f"{instrument} SN")
 
 
-def make_derive_psa(conreport: str) -> str:
+def make_derive_psa(conreport: str) -> bytes:
     template = derive_template()
     sensors = _conreport_extract_sensors(conreport)
     is_dual_channel = {"Temperature, 2", "Conductivity, 2"} <= set(sensors)
@@ -210,10 +213,10 @@ def make_derive_psa(conreport: str) -> str:
         xml_declaration=True,
         method="xml",
         encoding="UTF-8",
-    ).decode()
+    )
 
 
-def make_binavg_psa(conreport: str) -> str:
+def make_binavg_psa(conreport: str) -> bytes:
     """This is a noop, but included for a consistent API"""
     template = binavg_template()
     return etree.tostring(
@@ -222,10 +225,10 @@ def make_binavg_psa(conreport: str) -> str:
         xml_declaration=True,
         method="xml",
         encoding="UTF-8",
-    ).decode()
+    )
 
 
-def make_datcnv_psa(conreport: str) -> str:
+def make_datcnv_psa(conreport: str) -> bytes:
     allsensors = datcnv_allsensors()
     template = datcnv_template()
 
@@ -258,4 +261,14 @@ def make_datcnv_psa(conreport: str) -> str:
         xml_declaration=True,
         method="xml",
         encoding="UTF-8",
-    ).decode()
+    )
+
+def make_cnvs(ds: xr.Dataset) -> xr.Dataset:
+    datcnv = NamedFile(make_datcnv_psa(ds.conreport.item()), name="datcnv.psa")
+    derive = NamedFile(make_derive_psa(ds.conreport.item()), name="derive.psa")
+    binavg = NamedFile(make_binavg_psa(ds.conreport.item()), name="binavg.psa")
+
+    xmlcon = NamedFile(ds.sbe.to_xmlcon(), name=ds.xmlcon.attrs["filename"])
+    hex = NamedFile(ds.sbe.to_hex(), name=ds.hex.attrs["filename"])
+
+    return run_sbebatch(hex, xmlcon, datcnv, derive, binavg)
