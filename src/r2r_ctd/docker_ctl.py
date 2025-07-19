@@ -103,12 +103,10 @@ sbebatch_sh = r"""export DISPLAY=:1
 export HODLL=libwow64fex.dll
 export WINEPREFIX=/.wine
 
-echo $XDG_RUNTIME_DIR
-
 # if a previous run fails, some state is recorded that prevents a clean start again (via UI popup) , so we just remove that
 rm -rf /.wine/drive_c/users/abc/AppData/Local/Sea-Bird/
 cd /.wine/drive_c/proc/${TMPDIR_R2R}/in;
-wine "/.wine/drive_c/Program Files (x86)/Sea-Bird/SBEDataProcessing-Win32/SBEBatch.exe" batch.txt ${R2R_HEXNAME} ../out ${R2R_XMLCON} ../out/${R2R_TMPCNV}
+wine "/.wine/drive_c/Program Files (x86)/Sea-Bird/SBEDataProcessing-Win32/SBEBatch.exe" batch.txt ${R2R_HEXNAME} ../out ${R2R_XMLCON} ../out/${R2R_TMPCNV} -s
 exit 0;
 """
 

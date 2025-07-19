@@ -23,7 +23,7 @@ Steps needed to do:
   - [X] validate lat/lon against cruise bounds
   - [X] collect "cast info" (there is a bunch that goes in here)
   - [ ] write a record in the geoCSV
-  - [ ] make seabird output products (dockerized sbe software)
+  - [X] make seabird output products (dockerized sbe software)
 
 Progress as of 2025-05-20:
 * Had meeting with Alan about if this approach is workable, agreement that yes it is a good idea, so "full speed ahead"

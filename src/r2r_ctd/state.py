@@ -77,7 +77,13 @@ def get_or_write_derived_file(ds: xr.Dataset, key: str, func: Callable, **kwargs
         return ds[key]
 
     result = func(ds, **kwargs)
-    ds[key] = result
+    if isinstance(result, dict):
+        if key not in result:
+            raise ValueError(f"Callable func returning dictionary must have key {key}, got {result.keys()}")
+        for _key, value in result.items():
+            ds[_key] = value
+    else:
+        ds[key] = result
 
     write_ds_r2r(ds)
     return ds[key]
