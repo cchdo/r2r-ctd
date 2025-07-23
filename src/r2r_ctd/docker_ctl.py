@@ -3,6 +3,7 @@ from logging import getLogger
 from tempfile import TemporaryDirectory
 import atexit
 from typing import cast, Mapping
+import time
 
 from odf.sbe.io import string_loader
 
@@ -10,6 +11,8 @@ import docker
 
 from r2r_ctd.state import NamedFile
 from r2r_ctd.sbe import batch
+
+SBEDP_IMAGE = "ghcr.io/cchdo/sbedp:v2025.07.0"
 
 logger = getLogger(__name__)
 
@@ -25,7 +28,7 @@ def get_container():
     client = docker.from_env()
     labels = ["us.rvdata.ctd-proc"]
     _container = client.containers.run(
-        "r2r/sbe",
+        SBEDP_IMAGE,
         auto_remove=True,
         detach=True,
         volumes={str(_tmpdir.name): {"bind": "/.wine/drive_c/proc", "mode": "rw"}},
@@ -44,7 +47,14 @@ def get_container():
 
     atexit.register(_kill_container)
 
-    return _container
+    tries = 10
+    while tries:
+        _container.reload()
+        if _container.health == "healthy":
+            return _container
+        time.sleep(0.5)
+        tries -= 1
+    raise Exception("Could not start container after 5 seconds")
 
 
 conreport_sh = r"""export DISPLAY=:1
