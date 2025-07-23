@@ -109,6 +109,7 @@ def run_conreport(xmlcon: NamedFile):
 
         return conreport
 
+
 sbebatch_sh = r"""export DISPLAY=:1
 export HODLL=libwow64fex.dll
 export WINEPREFIX=/.wine
@@ -120,7 +121,14 @@ wine "/.wine/drive_c/Program Files (x86)/Sea-Bird/SBEDataProcessing-Win32/SBEBat
 exit 0;
 """
 
-def run_sbebatch(hex: NamedFile, xmlcon: NamedFile, datcnv: NamedFile, derive: NamedFile, binavg: NamedFile):
+
+def run_sbebatch(
+    hex: NamedFile,
+    xmlcon: NamedFile,
+    datcnv: NamedFile,
+    derive: NamedFile,
+    binavg: NamedFile,
+):
     container = get_container()
 
     with TemporaryDirectory(dir=_tmpdir.name) as condir:
@@ -155,14 +163,13 @@ def run_sbebatch(hex: NamedFile, xmlcon: NamedFile, datcnv: NamedFile, derive: N
                 "R2R_HEXNAME": hex.name,
                 "R2R_XMLCON": xmlcon.name,
                 "R2R_TMPCNV": hex_path.with_suffix(".cnv"),
-                },
+            },
         )
         stdout, stderr = batch_logs.output
         if stderr is not None:
             logger.debug(stderr.decode())
         if stdout is not None:
             logger.info(stdout.decode())
-
 
         cnv_24hz = outdir / f"{hex_path.stem}_24hz.cnv"
         cnv_1db = outdir / f"{hex_path.stem}_1db.cnv"

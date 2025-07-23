@@ -10,8 +10,10 @@ import click
 
 from r2r_ctd.state import get_xml_qa_path
 
+
 @click.group()
 def cli(): ...
+
 
 @cli.command()
 @click.argument(

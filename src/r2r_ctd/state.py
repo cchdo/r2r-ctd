@@ -14,12 +14,15 @@ R2R_QC_VARNAME = "r2r_qc"
 
 logger = getLogger(__name__)
 
+
 class NamedFile(bytes):
     name: str
+
     def __new__(cls, *args, name: str = ""):
         b = super().__new__(cls, *args)
         b.name = name
         return b
+
 
 class CheckFunc(Protocol):
     def __call__(self, ds: xr.Dataset, **kwargs: Any) -> bool: ...
@@ -79,7 +82,9 @@ def get_or_write_derived_file(ds: xr.Dataset, key: str, func: Callable, **kwargs
     result = func(ds, **kwargs)
     if isinstance(result, dict):
         if key not in result:
-            raise ValueError(f"Callable func returning dictionary must have key {key}, got {result.keys()}")
+            raise ValueError(
+                f"Callable func returning dictionary must have key {key}, got {result.keys()}"
+            )
         for _key, value in result.items():
             ds[_key] = value
     else:
