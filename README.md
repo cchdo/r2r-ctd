@@ -1,7 +1,7 @@
 # R2R CTD
 A port/update of the WHOI CTD QC code to something more packaged/modern
 
-This operates on an r2r CTD breakout direrctory that assumes the following structure:
+This operates on an r2r CTD breakout directory that assumes the following structure:
 * /data/
     * contains the raw ctd datafiles
 * /manifest-md5.txt
@@ -11,19 +11,35 @@ This operates on an r2r CTD breakout direrctory that assumes the following struc
     * should have 3 xmlt files for a fresh breakout, we are interested in the file with the _qa.2.0.xmlt suffix
     * The bounding box and temporal bounds are in this file.
 
+Polishing steps now needed:
+- [ ] XML QA report polishing
+  - [ ] Make an "r2r:update" record in r2r:provenance/r2r:updates (needs software versioning scheme sorted)
+  - [ ] Add geoCSV reference to "r2r:references"
+  - [ ] Add conreport references to "r2r:references"
+- [ ] Actually write out all the derived files to disk in the right structure (things are just in memory/state files)
+  - [ ] geoCSV
+  - [ ] conreports
+  - [ ] cnv files (what structure? looks like maybe /products/r2rctd/*.cnv)
+  - [ ] the XML QA report
+
 Steps needed to do:
 - [x] Check manifest file against breakout contents
 - [x] create a list of "stations" from these files
-- [ ] initialize a geocsv
-- [ ] for each "station"
+- [X] initialize a geocsv
+- [X] for each "station"
   - [X] exclude if looks like a deck test
   - [X] run conreport (dockerized sbe software)
   - [X] check if "all 3" files are present
-  - [X] validate time against curise bounds
+  - [X] validate time against cruise bounds
   - [X] validate lat/lon against cruise bounds
   - [X] collect "cast info" (there is a bunch that goes in here)
-  - [ ] write a record in the geoCSV
+  - [X] write a record in the geoCSV
   - [X] make seabird output products (dockerized sbe software)
+
+Progress as of 2025-07-23
+* A longish break to recover from an injury...
+* All the major checks are done and files are being generated, but not written to disk or not in the right place
+* See the above "polishing" steps for what is left
 
 Progress as of 2025-05-20:
 * Had meeting with Alan about if this approach is workable, agreement that yes it is a good idea, so "full speed ahead"
