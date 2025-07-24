@@ -369,6 +369,12 @@ class ResultAggregator:
     def gen_cnvs(self):
         for station in self.breakout.stations_hex_paths:
             data = self.breakout[station]
+
+            # if the conreport failed, don't bother with this cast
+            conreport = get_or_write_derived_file(data, "conreport", make_conreport)
+            if conreport is None:
+                continue
+
             cnv_24hz = get_or_write_derived_file(data, "cnv_24hz", make_cnvs)
             cnv_1db = get_or_write_derived_file(data, "cnv_1db", make_cnvs)
 
