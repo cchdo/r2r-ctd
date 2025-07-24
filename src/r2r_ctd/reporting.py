@@ -249,15 +249,12 @@ class ResultAggregator:
 
     @cached_property
     def info_model_number(self):
-        # The WHOI code did this in a loop that didn't handle the case
-        # of multiple instrument types in the same breakout
-        # it also appears to just use the last station iterated over (unsure if ordered)
-        # we are going to emulate that here
-        # There are also two code paths, one parses the xmlcon directly the other uses seabird software
-        # We are going to use the seabird method here since it was the default in what was provided
         model = ""
         for data in self.breakout:
             conreport = get_or_write_derived_file(data, "conreport", make_conreport)
+
+            if conreport is None:
+                continue
             model = get_model(conreport.item()) or ""
 
         return Info(model, name="Model Number of CTD Instrument", uom="Unitless")
@@ -284,10 +281,18 @@ class ResultAggregator:
 
     @cached_property
     def info_casts_with_xmlcon_bad_format(self):
-        ## Same as above, no format is checked, just that it is not one of those above
-        # Presumably the seabird software will crash/hang if this is bad?
-        # need example
-        return Info("", name="Casts with XMLCON/con file in Bad Format", uom="List")
+        problem_casts = []
+        for station in self.breakout.stations_hex_paths:
+            data = self.breakout[station]
+            conreport = get_or_write_derived_file(data, "conreport", make_conreport)
+            if conreport is None:
+                problem_casts.append(station.stem)
+
+        return Info(
+            " ".join(problem_casts),
+            name="Casts with XMLCON/con file in Bad Format",
+            uom="List",
+        )
 
     @cached_property
     def info_casts_with_dock_deck_test_in_file_name(self):
@@ -303,10 +308,12 @@ class ResultAggregator:
         for station in self.breakout.stations_hex_paths:
             data = self.breakout[station]
             conreport = get_or_write_derived_file(data, "conreport", make_conreport)
+            if conreport is None:
+                continue
             models = _conreport_sn_getter(conreport.item(), "Temperature")
             sn = _hdr_sn_getter(data.hdr.item(), "Temperature")
             if sn not in models:
-                problem_casts.append(station.name)
+                problem_casts.append(station.stem)
         return Info(
             " ".join(problem_casts),
             name="Casts with temp. sensor serial number problem",
@@ -319,6 +326,8 @@ class ResultAggregator:
         for station in self.breakout.stations_hex_paths:
             data = self.breakout[station]
             conreport = get_or_write_derived_file(data, "conreport", make_conreport)
+            if conreport is None:
+                continue
             models = _conreport_sn_getter(conreport.item(), "Conductivity")
             sn = _hdr_sn_getter(data.hdr.item(), "Conductivity")
             if sn not in models:

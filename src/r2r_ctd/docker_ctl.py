@@ -9,6 +9,7 @@ from odf.sbe.io import string_loader
 
 import docker
 
+from r2r_ctd.exceptions import InvalidXMLCONError
 from r2r_ctd.state import NamedFile
 from r2r_ctd.sbe import batch
 
@@ -96,12 +97,17 @@ def run_conreport(xmlcon: NamedFile):
             demux=True,
             environment={"TMPDIR_R2R": work_dir.name},
         )
-        try:
-            logger.debug(conreport_logs.output[1].decode())  # Stderr
-        except IndexError:
-            pass
+        stdout, stderr = conreport_logs.output
 
-        logger.info(conreport_logs.output[0].decode())  # stdout
+        if stdout is not None:
+            logger.info(stdout.decode())
+        if stderr is not None:
+            logger.debug(stderr.decode())
+            if b"ReadConFile - failed to read" in stderr:
+                logger.critical(
+                    "SBE ConReport.exe could not convert the xmlcon to a text report"
+                )
+                raise InvalidXMLCONError("Could not read XMLCON using seabird")
 
         out_path = outdir / infile.with_suffix(".txt").name
 

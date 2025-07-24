@@ -7,6 +7,8 @@ import numpy as np
 
 from odf.sbe import read_hex
 
+from r2r_ctd.exceptions import InvalidSBEFileError
+
 if TYPE_CHECKING:
     from r2r_ctd.breakout import Breakout
 
@@ -79,7 +81,17 @@ def get_or_write_derived_file(ds: xr.Dataset, key: str, func: Callable, **kwargs
         logger.debug(f"Found existing {key}, skipping regeneration")
         return ds[key]
 
-    result = func(ds, **kwargs)
+    error_key = f"{key}_error"
+    if R2R_QC_VARNAME in ds and ds[R2R_QC_VARNAME].attrs.get(error_key) is not None:
+        logger.debug(f"Previously failed to generate {key} not retrying")
+        return None
+
+    try:
+        result = func(ds, **kwargs)
+    except InvalidSBEFileError:
+        get_or_write_check(ds, error_key, lambda ds, **kwargs: False)
+        return None
+
     if isinstance(result, dict):
         if key not in result:
             raise ValueError(

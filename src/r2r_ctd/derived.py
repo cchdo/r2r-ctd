@@ -17,7 +17,7 @@ import xarray as xr
 from lxml import etree
 from lxml.builder import ElementMaker
 
-from r2r_ctd.state import NamedFile
+from r2r_ctd.state import NamedFile, get_or_write_derived_file
 
 logger = getLogger(__name__)
 
@@ -264,10 +264,12 @@ def make_datcnv_psa(conreport: str) -> bytes:
     )
 
 
-def make_cnvs(ds: xr.Dataset) -> xr.Dataset:
-    datcnv = NamedFile(make_datcnv_psa(ds.conreport.item()), name="datcnv.psa")
-    derive = NamedFile(make_derive_psa(ds.conreport.item()), name="derive.psa")
-    binavg = NamedFile(make_binavg_psa(ds.conreport.item()), name="binavg.psa")
+def make_cnvs(ds: xr.Dataset) -> dict[str, xr.Dataset]:
+    conreport = get_or_write_derived_file(ds, "conreport", make_conreport).item()
+
+    datcnv = NamedFile(make_datcnv_psa(conreport), name="datcnv.psa")
+    derive = NamedFile(make_derive_psa(conreport), name="derive.psa")
+    binavg = NamedFile(make_binavg_psa(conreport), name="binavg.psa")
 
     xmlcon = NamedFile(ds.sbe.to_xmlcon(), name=ds.xmlcon.attrs["filename"])
     hex = NamedFile(ds.sbe.to_hex(), name=ds.hex.attrs["filename"])
