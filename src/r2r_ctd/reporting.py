@@ -1,6 +1,8 @@
 from functools import cached_property
+import textwrap
 from typing import Literal
 from dataclasses import dataclass
+from datetime import datetime
 
 from lxml.builder import ElementMaker
 from lxml.etree import Element
@@ -16,7 +18,10 @@ from r2r_ctd.checks import (
 from r2r_ctd.derived import (
     _conreport_sn_getter,
     _hdr_sn_getter,
+    get_latitude,
+    get_longitude,
     get_model,
+    get_time,
     make_conreport,
     make_cnvs,
 )
@@ -377,6 +382,47 @@ class ResultAggregator:
 
             cnv_24hz = get_or_write_derived_file(data, "cnv_24hz", make_cnvs)
             cnv_1db = get_or_write_derived_file(data, "cnv_1db", make_cnvs)
+
+    def gen_geoCSV(self):
+        header = textwrap.dedent(f"""\
+        #dataset: GeoCSV 2.0
+        #field_unit: (unitless),(unitless),ISO_8601,second,degrees_east,degrees_north
+        #field_type: string,string,datetime,float,float
+        #field_standard_name: Cast number,Model number of CTD(ex. SBE911) for these data,date and time,Unix Epoch time,longitude of vessel,latitude of vessel
+        #field_missing: ,,,,, 
+        #delimiter: , 
+        #standard_name_cv: http://www.rvdata.us/voc/fieldname 
+        #source: http://www.rvdata.org 
+        #title: R2R Data Product - Generated from {self.breakout.cruise_id} - CTD (Seabird)
+        #cruise_id: {self.breakout.cruise_id}
+        #device_information: CTD (SeaBird) 
+        #creation_date: {datetime.now().replace(microsecond=0).isoformat()}
+        #input_data_doi: 10.7284/{self.breakout.fileset_id}
+        #This table lists file metadata for all CTD casts for identified cruise(s)
+        #dp_flag 0=unflagged,  3=invalid time, 4=invalid position, 6=out of valid cruise time range,
+        #	11=out of cruise navigation range, other values are unspecified flags
+        castID,ctd_type,iso_time,epoch_time,ship_longitude,ship_latitude,dp_flag""")
+        data_lines = []
+        for station in self.breakout.stations_hex_paths:
+            data = self.breakout[station]
+            conreport = get_or_write_derived_file(data, "conreport", make_conreport)
+            
+            lon = get_longitude(data) or ""
+            lat = get_latitude(data) or ""
+            time = get_time(data)
+
+            iso_time = ""
+            epoch = ""
+            if time:
+                iso_time = time.isoformat()
+                epoch = f"{time.timestamp():.0f}"
+
+            model = ""
+            if conreport:
+                model = get_model(conreport.item()) or ""
+            
+            data_lines.append(",".join([station.stem,model,iso_time,epoch,str(lon),str(lat),"0"]))
+        print("\n".join([header, *data_lines]))
 
     @property
     def certificate(self):

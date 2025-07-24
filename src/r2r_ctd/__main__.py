@@ -34,6 +34,7 @@ def qa(paths: tuple[Path, ...]):
         qa_xml = breakout.qa_template_xml
 
         ra = ResultAggregator(breakout)
+        ra.gen_geoCSV()
         certificate = ra.certificate
         ra.gen_cnvs()
 

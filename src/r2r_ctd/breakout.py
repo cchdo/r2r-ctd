@@ -127,6 +127,18 @@ class Breakout:
         )
 
     @property
+    def cruise_id(self):
+        root = self.qa_template_xml.getroot()
+        nsmap = root.nsmap
+        return self.qa_template_xml.find(".//r2r:cruise_id", namespaces=nsmap).text
+
+    @property
+    def fileset_id(self):
+        root = self.qa_template_xml.getroot()
+        nsmap = root.nsmap
+        return self.qa_template_xml.find(".//r2r:fileset_id", namespaces=nsmap).text
+
+    @property
     def bbox(self) -> BBox:
         """The bbox of the cruise in geojson bbox format/order"""
         root = self.qa_template_xml.getroot()

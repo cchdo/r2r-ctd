@@ -89,7 +89,7 @@ def _normalize_date_strings(date: str) -> str:
     return " ".join(date.split())
 
 
-def get_time(ds: xr.Dataset) -> float | None:
+def get_time(ds: xr.Dataset) -> datetime | None:
     """Gets the time from the hdr file
 
     In the following priority order:
