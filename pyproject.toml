@@ -1,6 +1,6 @@
 [project]
 name = "r2r-ctd"
-version = "0.1.0"
+dynamic = ["version"]
 description = "Add your description here"
 readme = "README.md"
 authors = [
@@ -16,11 +16,14 @@ dependencies = [
 ]
 
 [project.scripts]
-r2r-ctd = "r2r_ctd.__main__:main"
+r2r-ctd = "r2r_ctd.__main__:cli"
 
 [build-system]
-requires = ["hatchling"]
-build-backend = "hatchling.build"
+requires = ["setuptools>=68", "setuptools_scm>=7"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools_scm]
+fallback_version = "999"
 
 [dependency-groups]
 dev = [

@@ -12,6 +12,7 @@ from r2r_ctd.state import get_xml_qa_path
 
 
 @click.group()
+@click.version_option()
 def cli(): ...
 
 

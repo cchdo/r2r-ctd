@@ -436,7 +436,6 @@ wheels = [
 
 [[package]]
 name = "r2r-ctd"
-version = "0.1.0"
 source = { editable = "." }
 dependencies = [
     { name = "click" },
