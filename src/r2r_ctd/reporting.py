@@ -7,12 +7,12 @@ from typing import Literal
 from lxml.builder import ElementMaker
 from lxml.etree import _Element
 
+import r2r_ctd.accessors  # noqa
 from r2r_ctd.breakout import Breakout
 from r2r_ctd.checks import (
     check_dt,
     check_lat_lon,
     check_lat_lon_valid,
-    check_three_files,
     check_time_valid,
 )
 from r2r_ctd.derived import (
@@ -92,7 +92,8 @@ def valid_checksum(rating: Literal["G", "R"]) -> _Element:
 
 
 def lat_lon_range(
-    rating: Literal["G", "R", "Y", "N", "X"], test_result: str | int,
+    rating: Literal["G", "R", "Y", "N", "X"],
+    test_result: str | int,
 ) -> _Element:
     return Test(
         Rating(rating),
@@ -104,7 +105,8 @@ def lat_lon_range(
 
 
 def date_range(
-    rating: Literal["G", "R", "Y", "N", "X"], test_result: str | int,
+    rating: Literal["G", "R", "Y", "N", "X"],
+    test_result: str | int,
 ) -> _Element:
     return Test(
         Rating(rating),
@@ -121,11 +123,7 @@ class ResultAggregator:
 
     @cached_property
     def presence_of_all_files(self) -> int:
-        results = []
-        for station in self.breakout.stations_hex_paths:
-            data = self.breakout[station]
-            results.append(get_or_write_check(data, "three_files", check_three_files))
-
+        results = [data.r2r.all_three_files for data in self.breakout]
         return int((results.count(True) / len(results)) * 100)
 
     @property
@@ -156,7 +154,10 @@ class ResultAggregator:
         for data in self.breakout:
             results.append(
                 get_or_write_check(
-                    data, "lat_lon_range", check_lat_lon, bbox=self.breakout.bbox,
+                    data,
+                    "lat_lon_range",
+                    check_lat_lon,
+                    bbox=self.breakout.bbox,
                 ),
             )
 
@@ -256,7 +257,9 @@ class ResultAggregator:
             result.append("bl" in data)
 
         return Info(
-            str(result.count(True)), name="# of Casts with Bottles Fired", uom="Count",
+            str(result.count(True)),
+            name="# of Casts with Bottles Fired",
+            uom="Count",
         )
 
     @cached_property
@@ -288,12 +291,12 @@ class ResultAggregator:
         problem_casts = []
         for station in self.breakout.stations_hex_paths:
             data = self.breakout[station]
-            all_raw = (get_or_write_check(data, "three_files", check_three_files))
-            if not all_raw:
+            if not data.r2r.all_three_files:
                 problem_casts.append(station.name)
 
-        return Info(" ".join(problem_casts), name="Casts without all Raw Files", uom="List")
-
+        return Info(
+            " ".join(problem_casts), name="Casts without all Raw Files", uom="List",
+        )
 
     @cached_property
     def info_casts_with_hex_bad_format(self):
@@ -381,7 +384,10 @@ class ResultAggregator:
         for station in self.breakout.stations_hex_paths:
             data = self.breakout[station]
             if not get_or_write_check(
-                data, "lat_lon_range", check_lat_lon, bbox=self.breakout.bbox,
+                data,
+                "lat_lon_range",
+                check_lat_lon,
+                bbox=self.breakout.bbox,
             ):
                 problem_casts.append(station.stem)
         return Info(
@@ -453,7 +459,8 @@ class ResultAggregator:
             overall_rating(self.rating),
             Tests(
                 file_presence(
-                    self.presence_of_all_files_rating, self.presence_of_all_files,
+                    self.presence_of_all_files_rating,
+                    self.presence_of_all_files,
                 ),
                 valid_checksum(self.valid_checksum_rating),
                 lat_lon_range(self.lat_lon_nav_ranges_rating, self.lat_lon_nav_range),

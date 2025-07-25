@@ -60,7 +60,8 @@ def get_xml_qa_path(breakout: "Breakout") -> Path:
 
 def get_geoCSV_path(breakout: "Breakout") -> Path:
     geocsv_name = breakout.qa_template_path.name.replace(
-        "_qa.2.0.xmlt", "_ctd_metdata.geoCSV",
+        "_qa.2.0.xmlt",
+        "_ctd_metdata.geoCSV",
     )
 
     qa_dir = breakout.path / "proc"

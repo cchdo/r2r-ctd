@@ -125,7 +125,8 @@ class Breakout:
     @property
     def qa_template_xml(self) -> etree._ElementTree:
         return etree.parse(
-            self.qa_template_path, etree.XMLParser(remove_blank_text=True),
+            self.qa_template_path,
+            etree.XMLParser(remove_blank_text=True),
         )
 
     @property
