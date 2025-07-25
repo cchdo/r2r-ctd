@@ -55,25 +55,25 @@ def qa(gen_cnvs: bool, paths: tuple[Path, ...]):
             if "conreport" not in station:
                 continue
 
-            path = get_config_path(breakout) / cast(
+            con_path = get_config_path(breakout) / cast(
                 "str",
                 station.conreport.attrs["filename"],
             )
-            path.write_text(station.conreport.item())
+            con_path.write_text(station.conreport.item())
 
         for station in breakout:
             if "cnv_24hz" in station:
-                path = get_product_path(breakout) / cast(
+                cnv24_path = get_product_path(breakout) / cast(
                     "str",
                     station.cnv_24hz.attrs["filename"],
                 )
-                path.write_text(station.cnv_24hz.item())
+                cnv24_path.write_text(station.cnv_24hz.item())
             if "cnv_1db" in station:
-                path = get_product_path(breakout) / cast(
+                cnv1db_path = get_product_path(breakout) / cast(
                     "str",
                     station.cnv_1db.attrs["filename"],
                 )
-                path.write_text(station.cnv_1db.item())
+                cnv1db_path.write_text(station.cnv_1db.item())
 
         root = qa_xml.getroot()
         nsmap = root.nsmap

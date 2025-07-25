@@ -54,6 +54,8 @@ Time = E.time
 # XML QA Reference elements (links to files)
 Reference = E.reference
 
+ALL = 100  # percent
+A_FEW = 50  # percent
 
 def overall_rating(rating: Literal["G", "R", "Y", "N", "X"]) -> _Element:
     return Rating(
@@ -128,7 +130,7 @@ class ResultAggregator:
 
     @property
     def presence_of_all_files_rating(self) -> Literal["G", "R"]:
-        if self.presence_of_all_files == 100:
+        if self.presence_of_all_files == ALL:
             return "G"
         return "R"
 
@@ -172,12 +174,12 @@ class ResultAggregator:
         # if self.breakout.bbox:
         #   return "N" # grey
 
-        if self.lat_lon_nav_range == 100:
+        if self.lat_lon_nav_range == ALL:
             return "G"
 
         # in the WHOI code, it looks like up to 50% of the casts can have bad lat/lon
         # which I guess is a "few"
-        if self.lat_lon_nav_range >= 50:
+        if self.lat_lon_nav_range >= A_FEW:
             return "Y"
 
         return "R"
@@ -214,12 +216,12 @@ class ResultAggregator:
         # if self.breakout.temporal_bounds():
         #   return "N" # grey
 
-        if self.time_range == 100:
+        if self.time_range == ALL:
             return "G"
 
         # in the WHOI code, it looks like up to 50% of the casts can have bad time
         # which I guess is a "few"
-        if self.time_range >= 50:
+        if self.time_range >= A_FEW:
             return "Y"
 
         return "R"
@@ -252,9 +254,8 @@ class ResultAggregator:
 
     @cached_property
     def info_number_bottles(self):
-        result = []
-        for data in self.breakout:
-            result.append("bl" in data)
+        # TODO: This needs to check the files to see if any bottles were actually fired
+        result = ["bl" in data for data in self.breakout]
 
         return Info(
             str(result.count(True)),

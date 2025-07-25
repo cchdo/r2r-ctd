@@ -1,8 +1,7 @@
+import contextlib
 from importlib.metadata import PackageNotFoundError, version
 
 __version__: str = "999"
 
-try:
+with contextlib.suppress(PackageNotFoundError):
     __version__ = version(__name__)
-except PackageNotFoundError:
-    pass
