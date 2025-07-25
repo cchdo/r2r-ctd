@@ -142,8 +142,8 @@ def run_sbebatch(
 
     logger.info(f"Running in container {container.name}")
     logger.info(f"{hex.name} - Converting to cnv")
-    if len(hex) > 2**23: # 8MiB
-       logger.warning(f"{hex.name} is large, this might take a while")
+    if len(hex) > 2**23:  # 8MiB
+        logger.warning(f"{hex.name} is large, this might take a while")
 
     with TemporaryDirectory(dir=_tmpdir.name) as condir:
         work_dir = Path(condir)

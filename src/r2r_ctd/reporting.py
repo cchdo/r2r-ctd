@@ -406,7 +406,7 @@ class ResultAggregator:
         for station in self.breakout.stations_hex_paths:
             data = self.breakout[station]
             conreport = get_or_write_derived_file(data, "conreport", make_conreport)
-            
+
             lon = get_longitude(data) or ""
             lat = get_latitude(data) or ""
             time = get_time(data)
@@ -420,8 +420,12 @@ class ResultAggregator:
             model = ""
             if conreport:
                 model = get_model(conreport.item()) or ""
-            
-            data_lines.append(",".join([station.stem,model,iso_time,epoch,str(lon),str(lat),"0"]))
+
+            data_lines.append(
+                ",".join(
+                    [station.stem, model, iso_time, epoch, str(lon), str(lat), "0"]
+                )
+            )
         print("\n".join([header, *data_lines]))
 
     @property

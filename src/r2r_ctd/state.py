@@ -127,7 +127,9 @@ def get_or_write_check(ds: xr.Dataset, key: str, func: CheckFunc, **kwargs) -> b
 
     logger.debug(f"{filename}: Results not found running test {key}")
     check_result = func(ds, **kwargs)
-    logger.debug(f"{filename}: Test result for {key} if {check_result}, writing to state")
+    logger.debug(
+        f"{filename}: Test result for {key} if {check_result}, writing to state"
+    )
     ds[R2R_QC_VARNAME].attrs[key] = np.int8(check_result)
     write_ds_r2r(ds)
 
