@@ -13,7 +13,7 @@ from r2r_ctd.exceptions import InvalidXMLCONError
 from r2r_ctd.state import NamedFile
 from r2r_ctd.sbe import batch
 
-SBEDP_IMAGE = "ghcr.io/cchdo/sbedp:v2025.07.0"
+SBEDP_IMAGE = "ghcr.io/cchdo/sbedp:v2025.07.1"
 
 logger = getLogger(__name__)
 
@@ -73,6 +73,9 @@ exit 0;
 
 def run_conreport(xmlcon: NamedFile):
     container = get_container()
+
+    logger.info(f"Running in container {container.name}")
+    logger.info(f"{xmlcon.name} - Running ConReport.exe")
 
     with TemporaryDirectory(dir=_tmpdir.name) as condir:
         work_dir = Path(condir)
@@ -136,6 +139,11 @@ def run_sbebatch(
     binavg: NamedFile,
 ):
     container = get_container()
+
+    logger.info(f"Running in container {container.name}")
+    logger.info(f"{hex.name} - Converting to cnv")
+    if len(hex) > 2**23: # 8MiB
+       logger.warning(f"{hex.name} is large, this might take a while")
 
     with TemporaryDirectory(dir=_tmpdir.name) as condir:
         work_dir = Path(condir)

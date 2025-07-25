@@ -77,13 +77,17 @@ def initialize_or_get_state(breakout: "Breakout", hex_path: Path) -> xr.Dataset:
 
 
 def get_or_write_derived_file(ds: xr.Dataset, key: str, func: Callable, **kwargs):
+    filename = ""
+    if "hex" in ds:
+        filename = ds.hex.attrs["filename"]
+
     if key in ds:
-        logger.debug(f"Found existing {key}, skipping regeneration")
+        logger.debug(f"{filename} - Found existing {key}, skipping regeneration")
         return ds[key]
 
     error_key = f"{key}_error"
     if R2R_QC_VARNAME in ds and ds[R2R_QC_VARNAME].attrs.get(error_key) is not None:
-        logger.debug(f"Previously failed to generate {key} not retrying")
+        logger.debug(f"{filename} - Previously failed to generate {key} not retrying")
         return None
 
     try:
@@ -95,7 +99,7 @@ def get_or_write_derived_file(ds: xr.Dataset, key: str, func: Callable, **kwargs
     if isinstance(result, dict):
         if key not in result:
             raise ValueError(
-                f"Callable func returning dictionary must have key {key}, got {result.keys()}"
+                f"{filename} - Callable func returning dictionary must have key {key}, got {result.keys()}"
             )
         for _key, value in result.items():
             ds[_key] = value
@@ -107,19 +111,23 @@ def get_or_write_derived_file(ds: xr.Dataset, key: str, func: Callable, **kwargs
 
 
 def get_or_write_check(ds: xr.Dataset, key: str, func: CheckFunc, **kwargs) -> bool:
+    filename = ""
+    if "hex" in ds:
+        filename = ds.hex.attrs["filename"]
+
     if R2R_QC_VARNAME not in ds:
         ds[R2R_QC_VARNAME] = xr.DataArray()
 
     if key in ds[R2R_QC_VARNAME].attrs:
         value = ds[R2R_QC_VARNAME].attrs[key]
         logger.debug(
-            f"{key}: found result already with value {bool(value)}, skipping test"
+            f"{filename} - {key}: found result already with value {bool(value)}, skipping test"
         )
         return bool(value)
 
-    logger.debug(f"Results not found running test {key}")
+    logger.debug(f"{filename}: Results not found running test {key}")
     check_result = func(ds, **kwargs)
-    logger.debug(f"Test result for {key} if {check_result}, writing to state")
+    logger.debug(f"{filename}: Test result for {key} if {check_result}, writing to state")
     ds[R2R_QC_VARNAME].attrs[key] = np.int8(check_result)
     write_ds_r2r(ds)
 
