@@ -35,7 +35,7 @@ def is_deck_test(path: Path) -> bool:
         "990",
     )
     for substr in substrs:
-        if substr in path.name:
+        if substr in path.name.lower():
             return True
     return False
 
