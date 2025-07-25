@@ -187,5 +187,5 @@ class Breakout:
             return self.__cache[key]
 
     def __iter__(self):
-        for path in self.hex_paths:
+        for path in self.stations_hex_paths:
             yield self[path]
