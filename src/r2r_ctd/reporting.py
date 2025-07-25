@@ -5,7 +5,7 @@ from dataclasses import dataclass
 from datetime import datetime
 
 from lxml.builder import ElementMaker
-from lxml.etree import Element
+from lxml.etree import _Element
 
 from r2r_ctd.breakout import Breakout
 from r2r_ctd.checks import (
@@ -47,7 +47,7 @@ Infos = E.infos
 Info = E.info
 
 
-def overall_rating(rating: Literal["G", "R", "Y", "N", "X"]) -> Element:
+def overall_rating(rating: Literal["G", "R", "Y", "N", "X"]) -> _Element:
     return Rating(
         rating,
         description=(
@@ -60,7 +60,7 @@ def overall_rating(rating: Literal["G", "R", "Y", "N", "X"]) -> Element:
     )
 
 
-def file_presence(rating: Literal["G", "R"], test_result: str | int) -> Element:
+def file_presence(rating: Literal["G", "R"], test_result: str | int) -> _Element:
     """Construct the Element for the all raw files test"""
     return Test(
         Rating(rating),
@@ -71,7 +71,7 @@ def file_presence(rating: Literal["G", "R"], test_result: str | int) -> Element:
     )
 
 
-def valid_checksum(rating: Literal["G", "R"]) -> Element:
+def valid_checksum(rating: Literal["G", "R"]) -> _Element:
     """Construct the Element for the valid checksum test"""
 
     return Test(
@@ -86,7 +86,7 @@ def valid_checksum(rating: Literal["G", "R"]) -> Element:
 
 def lat_lon_range(
     rating: Literal["G", "R", "Y", "N", "X"], test_result: str | int
-) -> Element:
+) -> _Element:
     return Test(
         Rating(rating),
         TestResult(str(test_result), uom="Percent"),
@@ -98,7 +98,7 @@ def lat_lon_range(
 
 def date_range(
     rating: Literal["G", "R", "Y", "N", "X"], test_result: str | int
-) -> Element:
+) -> _Element:
     return Test(
         Rating(rating),
         TestResult(str(test_result), uom="Percent"),
