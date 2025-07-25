@@ -426,7 +426,7 @@ class ResultAggregator:
                     [station.stem, model, iso_time, epoch, str(lon), str(lat), "0"]
                 )
             )
-        print("\n".join([header, *data_lines]))
+        return "\n".join([header, *data_lines])
 
     @property
     def certificate(self):
