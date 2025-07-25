@@ -27,7 +27,7 @@ class NamedFile(bytes):
 
 
 class CheckFunc(Protocol):
-    def __call__(self, ds: xr.Dataset, **kwargs: Any) -> bool: ...
+    def __call__(self, ds: xr.Dataset, *args: Any, **kwargs: Any) -> bool: ...
 
 
 def write_ds_r2r(ds: xr.Dataset) -> None:
