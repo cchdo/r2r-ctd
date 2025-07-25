@@ -16,8 +16,8 @@ from r2r_ctd.checks import (
     check_time_valid,
 )
 from r2r_ctd.derived import (
-    _conreport_sn_getter,
-    _hdr_sn_getter,
+    get_conreport_sn,
+    get_hdr_sn,
     get_latitude,
     get_longitude,
     get_model,
@@ -315,8 +315,8 @@ class ResultAggregator:
             conreport = get_or_write_derived_file(data, "conreport", make_conreport)
             if conreport is None:
                 continue
-            models = _conreport_sn_getter(conreport.item(), "Temperature")
-            sn = _hdr_sn_getter(data.hdr.item(), "Temperature")
+            models = get_conreport_sn(conreport.item(), "Temperature")
+            sn = get_hdr_sn(data.hdr.item(), "Temperature")
             if sn not in models:
                 problem_casts.append(station.stem)
         return Info(
@@ -333,8 +333,8 @@ class ResultAggregator:
             conreport = get_or_write_derived_file(data, "conreport", make_conreport)
             if conreport is None:
                 continue
-            models = _conreport_sn_getter(conreport.item(), "Conductivity")
-            sn = _hdr_sn_getter(data.hdr.item(), "Conductivity")
+            models = get_conreport_sn(conreport.item(), "Conductivity")
+            sn = get_hdr_sn(data.hdr.item(), "Conductivity")
             if sn not in models:
                 problem_casts.append(station.stem)
         return Info(
@@ -380,8 +380,8 @@ class ResultAggregator:
             if conreport is None:
                 continue
 
-            cnv_24hz = get_or_write_derived_file(data, "cnv_24hz", make_cnvs)
-            cnv_1db = get_or_write_derived_file(data, "cnv_1db", make_cnvs)
+            get_or_write_derived_file(data, "cnv_24hz", make_cnvs)
+            get_or_write_derived_file(data, "cnv_1db", make_cnvs)
 
     def gen_geoCSV(self):
         header = textwrap.dedent(f"""\

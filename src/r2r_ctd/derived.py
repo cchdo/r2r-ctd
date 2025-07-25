@@ -155,7 +155,7 @@ def _conreport_extract_sensors(conreport: str) -> list[str]:
     return sensors
 
 
-def _conreport_sn_getter(conreport: str, instrument: str) -> set[str]:
+def get_conreport_sn(conreport: str, instrument: str) -> set[str]:
     section = 0
     title = ""
     sns = []
@@ -182,7 +182,7 @@ def _conreport_sn_getter(conreport: str, instrument: str) -> set[str]:
     return set(sns)
 
 
-def _hdr_sn_getter(hdr: str, instrument: str) -> str | None:
+def get_hdr_sn(hdr: str, instrument: str) -> str | None:
     header = parse_hdr(hdr)
     return header.get(f"{instrument} SN")
 
