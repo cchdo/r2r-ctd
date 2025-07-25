@@ -285,6 +285,18 @@ class ResultAggregator:
         return Info(str(number), name="# of Casts with NAV for All Scans", uom="Count")
 
     @cached_property
+    def info_casts_without_all_raw(self):
+        problem_casts = []
+        for station in self.breakout.stations_hex_paths:
+            data = self.breakout[station]
+            all_raw = (get_or_write_check(data, "three_files", check_three_files))
+            if not all_raw:
+                problem_casts.append(station.name)
+
+        return Info(" ".join(problem_casts), name="Casts without all Raw Files", uom="List")
+    
+
+    @cached_property
     def info_casts_with_hex_bad_format(self):
         # The WHOI code runs `file -b` and checks to see if the result has one of:
         # "data", "objects", or "executable" in the type
@@ -453,6 +465,7 @@ class ResultAggregator:
                 self.info_number_bottles,
                 self.info_model_number,
                 self.info_number_casts_with_nav_all_scans,
+                self.info_casts_without_all_raw,
                 self.info_casts_with_hex_bad_format,
                 self.info_casts_with_xmlcon_bad_format,
                 self.info_casts_with_dock_deck_test_in_file_name,
