@@ -1,5 +1,6 @@
 from pathlib import Path
 import logging
+from typing import cast
 
 from rich.logging import RichHandler
 
@@ -8,7 +9,12 @@ from r2r_ctd.reporting import ResultAggregator
 
 import click
 
-from r2r_ctd.state import get_xml_qa_path
+from r2r_ctd.state import (
+    get_config_path,
+    get_geoCSV_path,
+    get_product_path,
+    get_xml_qa_path,
+)
 
 
 @click.group()
@@ -23,7 +29,8 @@ def cli(): ...
     required=True,
     type=click.Path(exists=True, file_okay=False, writable=True, path_type=Path),
 )
-def qa(paths: tuple[Path, ...]):
+@click.option("--gen-cnvs/--no-gen-cnvs", default=True)
+def qa(gen_cnvs: bool, paths: tuple[Path, ...]):
     """Run the QA routines on one or more directories"""
     FORMAT = "%(message)s"
     logging.basicConfig(
@@ -35,15 +42,44 @@ def qa(paths: tuple[Path, ...]):
         qa_xml = breakout.qa_template_xml
 
         ra = ResultAggregator(breakout)
-        ra.gen_geoCSV()
         certificate = ra.certificate
-        ra.gen_cnvs()
+
+        if gen_cnvs:
+            ra.gen_cnvs()
+
+        # write geoCSV
+        get_geoCSV_path(breakout).write_text(ra.gen_geoCSV())
+
+        for station in breakout:
+            if "conreport" not in station:
+                continue
+
+            path = get_config_path(breakout) / cast(
+                str, station.conreport.attrs["filename"]
+            )
+            path.write_text(station.conreport.item())
+
+        for station in breakout:
+            if "cnv_24hz" in station:
+                path = get_product_path(breakout) / cast(
+                    str, station.cnv_24hz.attrs["filename"]
+                )
+                path.write_text(station.cnv_24hz.item())
+            if "cnv_1db" in station:
+                path = get_product_path(breakout) / cast(
+                    str, station.cnv_1db.attrs["filename"]
+                )
+                path.write_text(station.cnv_1db.item())
 
         root = qa_xml.getroot()
         nsmap = root.nsmap
-        prefix = "/r2r:qareport"
-        cert = root.xpath(f"{prefix}/r2r:certificate", namespaces=nsmap)[0]
+        cert = root.xpath("/r2r:qareport/r2r:certificate", namespaces=nsmap)[0]
+        updates = root.xpath(
+            "/r2r:qareport/r2r:provenance/r2r:updates", namespaces=nsmap
+        )[0]
+        references = root.xpath("/r2r:qareport/r2r:references", namespaces=nsmap)[0]
         root.replace(cert, certificate)
+
         with open(get_xml_qa_path(breakout), "wb") as f:
             qa_xml.write(
                 f,

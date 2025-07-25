@@ -35,6 +35,7 @@ E = ElementMaker(
     nsmap={"r2r": "https://service.rvdata.us/schema/r2r-2.0"},
 )
 
+# XML QA Certificate Elements
 Certificate = E.certificate
 Rating = E.rating
 Tests = E.tests
@@ -42,9 +43,16 @@ Test = E.test
 TestResult = E.test_result
 Bounds = E.bounds
 Bound = E.bound
-
 Infos = E.infos
 Info = E.info
+
+# XML QA Update Elements
+Update = E.update
+Process = E.process
+Time = E.time
+
+# XML QA Reference elements (links to files)
+Reference = E.reference
 
 
 def overall_rating(rating: Literal["G", "R", "Y", "N", "X"]) -> _Element:
