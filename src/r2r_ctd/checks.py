@@ -1,5 +1,5 @@
-from pathlib import Path
 from logging import getLogger
+from pathlib import Path
 from typing import TYPE_CHECKING
 
 import xarray as xr
@@ -58,7 +58,6 @@ def check_three_files(ds: xr.Dataset) -> bool:
 
 def check_lat_lon_valid(ds: xr.Dataset) -> bool:
     """Checks if a valid lat/lon can even be extracted from the hex/header"""
-
     if "hdr" not in ds:
         return False
 
@@ -70,7 +69,6 @@ def check_lat_lon_valid(ds: xr.Dataset) -> bool:
 
 def check_time_valid(ds: xr.Dataset) -> bool:
     """Checks if a valid time can even be extracted from the hex/header"""
-
     if "hdr" not in ds:
         return False
 

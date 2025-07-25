@@ -1,8 +1,8 @@
-from functools import cached_property
 import textwrap
-from typing import Literal
 from dataclasses import dataclass
 from datetime import datetime
+from functools import cached_property
+from typing import Literal
 
 from lxml.builder import ElementMaker
 from lxml.etree import _Element
@@ -22,8 +22,8 @@ from r2r_ctd.derived import (
     get_longitude,
     get_model,
     get_time,
-    make_conreport,
     make_cnvs,
+    make_conreport,
 )
 from r2r_ctd.state import (
     get_or_write_check,
@@ -81,7 +81,6 @@ def file_presence(rating: Literal["G", "R"], test_result: str | int) -> _Element
 
 def valid_checksum(rating: Literal["G", "R"]) -> _Element:
     """Construct the Element for the valid checksum test"""
-
     return Test(
         Rating(rating),
         Bounds(
@@ -93,7 +92,7 @@ def valid_checksum(rating: Literal["G", "R"]) -> _Element:
 
 
 def lat_lon_range(
-    rating: Literal["G", "R", "Y", "N", "X"], test_result: str | int
+    rating: Literal["G", "R", "Y", "N", "X"], test_result: str | int,
 ) -> _Element:
     return Test(
         Rating(rating),
@@ -105,7 +104,7 @@ def lat_lon_range(
 
 
 def date_range(
-    rating: Literal["G", "R", "Y", "N", "X"], test_result: str | int
+    rating: Literal["G", "R", "Y", "N", "X"], test_result: str | int,
 ) -> _Element:
     return Test(
         Rating(rating),
@@ -146,7 +145,7 @@ class ResultAggregator:
         results = []
         for data in self.breakout:
             results.append(
-                get_or_write_check(data, "lat_lon_valid", check_lat_lon_valid)
+                get_or_write_check(data, "lat_lon_valid", check_lat_lon_valid),
             )
 
         return int((results.count(True) / len(results)) * 100)
@@ -157,8 +156,8 @@ class ResultAggregator:
         for data in self.breakout:
             results.append(
                 get_or_write_check(
-                    data, "lat_lon_range", check_lat_lon, bbox=self.breakout.bbox
-                )
+                    data, "lat_lon_range", check_lat_lon, bbox=self.breakout.bbox,
+                ),
             )
 
         return int((results.count(True) / len(results)) * 100)
@@ -200,7 +199,7 @@ class ResultAggregator:
                     "date_range",
                     check_dt,
                     dtrange=self.breakout.temporal_bounds(),
-                )
+                ),
             )
 
         return int((results.count(True) / len(results)) * 100)
@@ -257,7 +256,7 @@ class ResultAggregator:
             result.append("bl" in data)
 
         return Info(
-            str(result.count(True)), name="# of Casts with Bottles Fired", uom="Count"
+            str(result.count(True)), name="# of Casts with Bottles Fired", uom="Count",
         )
 
     @cached_property
@@ -294,7 +293,7 @@ class ResultAggregator:
                 problem_casts.append(station.name)
 
         return Info(" ".join(problem_casts), name="Casts without all Raw Files", uom="List")
-    
+
 
     @cached_property
     def info_casts_with_hex_bad_format(self):
@@ -382,7 +381,7 @@ class ResultAggregator:
         for station in self.breakout.stations_hex_paths:
             data = self.breakout[station]
             if not get_or_write_check(
-                data, "lat_lon_range", check_lat_lon, bbox=self.breakout.bbox
+                data, "lat_lon_range", check_lat_lon, bbox=self.breakout.bbox,
             ):
                 problem_casts.append(station.stem)
         return Info(
@@ -443,8 +442,8 @@ class ResultAggregator:
 
             data_lines.append(
                 ",".join(
-                    [station.stem, model, iso_time, epoch, str(lon), str(lat), "0"]
-                )
+                    [station.stem, model, iso_time, epoch, str(lon), str(lat), "0"],
+                ),
             )
         return "\n".join([header, *data_lines])
 
@@ -454,7 +453,7 @@ class ResultAggregator:
             overall_rating(self.rating),
             Tests(
                 file_presence(
-                    self.presence_of_all_files_rating, self.presence_of_all_files
+                    self.presence_of_all_files_rating, self.presence_of_all_files,
                 ),
                 valid_checksum(self.valid_checksum_rating),
                 lat_lon_range(self.lat_lon_nav_ranges_rating, self.lat_lon_nav_range),

@@ -1,10 +1,11 @@
 from dataclasses import dataclass
-from typing import NamedTuple
-from pathlib import Path
+from datetime import datetime, timedelta
 from functools import cached_property
 from hashlib import file_digest
+from pathlib import Path
+from typing import NamedTuple
+
 from lxml import etree
-from datetime import datetime, timedelta
 
 from r2r_ctd.checks import is_deck_test
 from r2r_ctd.state import initialize_or_get_state
@@ -105,7 +106,8 @@ class Breakout:
     def stations_hex_paths(self) -> list[Path]:
         """Return a list of hex paths that are not deck tests
 
-        For the purposes of QC, these are the set of stations to operate on"""
+        For the purposes of QC, these are the set of stations to operate on
+        """
         return [path for path in self.hex_paths if path not in self.deck_test_paths]
 
     @property
@@ -123,7 +125,7 @@ class Breakout:
     @property
     def qa_template_xml(self) -> etree._ElementTree:
         return etree.parse(
-            self.qa_template_path, etree.XMLParser(remove_blank_text=True)
+            self.qa_template_path, etree.XMLParser(remove_blank_text=True),
         )
 
     @property
@@ -152,7 +154,7 @@ class Breakout:
         for elm in (w, s, e, n):
             if len(elm) != 1:
                 raise ValueError(
-                    "Zero or more than one geographic bound in breakout xml"
+                    "Zero or more than one geographic bound in breakout xml",
                 )
             result.append(float(elm[0]))
         if len(result) != 4:

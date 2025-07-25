@@ -1,17 +1,17 @@
-from pathlib import Path
-from logging import getLogger
-from tempfile import TemporaryDirectory
 import atexit
-from typing import cast, Mapping
 import time
-
-from odf.sbe.io import string_loader
+from collections.abc import Mapping
+from logging import getLogger
+from pathlib import Path
+from tempfile import TemporaryDirectory
+from typing import cast
 
 import docker
+from odf.sbe.io import string_loader
 
 from r2r_ctd.exceptions import InvalidXMLCONError
-from r2r_ctd.state import NamedFile
 from r2r_ctd.sbe import batch
+from r2r_ctd.state import NamedFile
 
 SBEDP_IMAGE = "ghcr.io/cchdo/sbedp:v2025.07.1"
 
@@ -38,7 +38,7 @@ def get_container():
         # we are doing this for security reasons
         # looks like the python typeshed is not correct here so I am casting to
         # something it knows about
-        ports=cast(Mapping[str, None], {"3000/tcp": ("127.0.0.1",)}),
+        ports=cast("Mapping[str, None]", {"3000/tcp": ("127.0.0.1",)}),
     )
     logger.info(f"Container launched as {_container.name} with labels: {labels}")
 
@@ -108,7 +108,7 @@ def run_conreport(xmlcon: NamedFile):
             logger.debug(stderr.decode())
             if b"ReadConFile - failed to read" in stderr:
                 logger.critical(
-                    "SBE ConReport.exe could not convert the xmlcon to a text report"
+                    "SBE ConReport.exe could not convert the xmlcon to a text report",
                 )
                 raise InvalidXMLCONError("Could not read XMLCON using seabird")
 

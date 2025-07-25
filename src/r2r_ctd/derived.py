@@ -1,22 +1,20 @@
 from datetime import datetime
 from logging import getLogger
 
-from r2r_ctd.docker_ctl import run_conreport, run_sbebatch
-from r2r_ctd.sbe import (
-    binavg_template,
-    derive_template,
-    sensors_con_to_psa,
-    datcnv_allsensors,
-    datcnv_template,
-)
-
-from odf.sbe import accessors  # noqa: F401
-from odf.sbe.parsers import parse_hdr
-
 import xarray as xr
 from lxml import etree
 from lxml.builder import ElementMaker
+from odf.sbe import accessors  # noqa: F401
+from odf.sbe.parsers import parse_hdr
 
+from r2r_ctd.docker_ctl import run_conreport, run_sbebatch
+from r2r_ctd.sbe import (
+    binavg_template,
+    datcnv_allsensors,
+    datcnv_template,
+    derive_template,
+    sensors_con_to_psa,
+)
 from r2r_ctd.state import NamedFile, get_or_write_derived_file
 
 logger = getLogger(__name__)
@@ -36,25 +34,25 @@ def _parse_coord(coord: str) -> float | None:
         d_, m_, h_ = coord.split()
     except ValueError:
         logger.error(f"Could not unpack {coord} into DDM", exc_info=True)
-        return
+        return None
 
     try:
         d = float(d_)
     except ValueError:
         logger.error(f"Could not parse degree {d_} as float", exc_info=True)
-        return
+        return None
 
     try:
         m = float(m_)
     except ValueError:
         logger.error(f"Could not parse decimal minute {m_} as float", exc_info=True)
-        return
+        return None
 
     try:
         h = hem_ints[h_.upper()]
     except KeyError:
         logger.error(f"Could not parse hemisphere {h_}", exc_info=True)
-        return
+        return None
 
     return (d + (m / 60)) * h
 
@@ -73,8 +71,8 @@ def get_longitude(ds: xr.Dataset) -> float | None:
 def get_latitude(ds: xr.Dataset) -> float | None:
     """Get the cast latitude from NMEA header
 
-    See the docstring for get_longitude for comment on original code"""
-
+    See the docstring for get_longitude for comment on original code
+    """
     headers = parse_hdr(ds.hdr.item())
     if (value := headers.get("NMEA Latitude")) is not None:
         return _parse_coord(value)
@@ -237,7 +235,6 @@ def make_datcnv_psa(conreport: str) -> bytes:
         if sensor == "Free":
             continue
         if sensor not in sensors_con_to_psa:
-            ...
             # something new? this needs an update procedure...
             continue
 
@@ -247,7 +244,7 @@ def make_datcnv_psa(conreport: str) -> bytes:
                 allsensors.xpath(
                     "//CalcArrayItem[./Calc/FullName[@value=$psa_sensor]]",
                     psa_sensor=psa_sensor,
-                )
+                ),
             )
     for index, item in enumerate(calc_array):
         item.attrib["index"] = str(index)

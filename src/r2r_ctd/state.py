@@ -1,10 +1,10 @@
-from pathlib import Path
+from collections.abc import Callable
 from logging import getLogger
-from typing import Callable, Protocol, Any, TYPE_CHECKING
+from pathlib import Path
+from typing import TYPE_CHECKING, Any, Protocol
 
-import xarray as xr
 import numpy as np
-
+import xarray as xr
 from odf.sbe import read_hex
 
 from r2r_ctd.exceptions import InvalidSBEFileError
@@ -60,7 +60,7 @@ def get_xml_qa_path(breakout: "Breakout") -> Path:
 
 def get_geoCSV_path(breakout: "Breakout") -> Path:
     geocsv_name = breakout.qa_template_path.name.replace(
-        "_qa.2.0.xmlt", "_ctd_metdata.geoCSV"
+        "_qa.2.0.xmlt", "_ctd_metdata.geoCSV",
     )
 
     qa_dir = breakout.path / "proc"
@@ -124,7 +124,7 @@ def get_or_write_derived_file(ds: xr.Dataset, key: str, func: Callable, **kwargs
     if isinstance(result, dict):
         if key not in result:
             raise ValueError(
-                f"{filename} - Callable func returning dictionary must have key {key}, got {result.keys()}"
+                f"{filename} - Callable func returning dictionary must have key {key}, got {result.keys()}",
             )
         for _key, value in result.items():
             ds[_key] = value
@@ -146,14 +146,14 @@ def get_or_write_check(ds: xr.Dataset, key: str, func: CheckFunc, **kwargs) -> b
     if key in ds[R2R_QC_VARNAME].attrs:
         value = ds[R2R_QC_VARNAME].attrs[key]
         logger.debug(
-            f"{filename} - {key}: found result already with value {bool(value)}, skipping test"
+            f"{filename} - {key}: found result already with value {bool(value)}, skipping test",
         )
         return bool(value)
 
     logger.debug(f"{filename}: Results not found running test {key}")
     check_result = func(ds, **kwargs)
     logger.debug(
-        f"{filename}: Test result for {key} if {check_result}, writing to state"
+        f"{filename}: Test result for {key} if {check_result}, writing to state",
     )
     ds[R2R_QC_VARNAME].attrs[key] = np.int8(check_result)
     write_ds_r2r(ds)

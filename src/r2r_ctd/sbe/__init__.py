@@ -1,7 +1,9 @@
+from importlib.resources import path, read_text
 from tomllib import loads
-from importlib.resources import read_text, path
-import r2r_ctd
+
 from lxml import etree
+
+import r2r_ctd
 
 sensors_con_to_psa = loads(read_text(r2r_ctd, "sbe/sensors.toml"))
 

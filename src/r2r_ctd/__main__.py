@@ -1,14 +1,12 @@
-from pathlib import Path
 import logging
+from pathlib import Path
 from typing import cast
 
+import click
 from rich.logging import RichHandler
 
 from r2r_ctd.breakout import Breakout
 from r2r_ctd.reporting import ResultAggregator
-
-import click
-
 from r2r_ctd.state import (
     get_config_path,
     get_geoCSV_path,
@@ -34,7 +32,7 @@ def qa(gen_cnvs: bool, paths: tuple[Path, ...]):
     """Run the QA routines on one or more directories"""
     FORMAT = "%(message)s"
     logging.basicConfig(
-        level="NOTSET", format=FORMAT, datefmt="[%X]", handlers=[RichHandler()]
+        level="NOTSET", format=FORMAT, datefmt="[%X]", handlers=[RichHandler()],
     )
     for path in paths:
         breakout = Breakout(path=path)
@@ -55,19 +53,19 @@ def qa(gen_cnvs: bool, paths: tuple[Path, ...]):
                 continue
 
             path = get_config_path(breakout) / cast(
-                str, station.conreport.attrs["filename"]
+                "str", station.conreport.attrs["filename"],
             )
             path.write_text(station.conreport.item())
 
         for station in breakout:
             if "cnv_24hz" in station:
                 path = get_product_path(breakout) / cast(
-                    str, station.cnv_24hz.attrs["filename"]
+                    "str", station.cnv_24hz.attrs["filename"],
                 )
                 path.write_text(station.cnv_24hz.item())
             if "cnv_1db" in station:
                 path = get_product_path(breakout) / cast(
-                    str, station.cnv_1db.attrs["filename"]
+                    "str", station.cnv_1db.attrs["filename"],
                 )
                 path.write_text(station.cnv_1db.item())
 
@@ -75,7 +73,7 @@ def qa(gen_cnvs: bool, paths: tuple[Path, ...]):
         nsmap = root.nsmap
         cert = root.xpath("/r2r:qareport/r2r:certificate", namespaces=nsmap)[0]
         updates = root.xpath(
-            "/r2r:qareport/r2r:provenance/r2r:updates", namespaces=nsmap
+            "/r2r:qareport/r2r:provenance/r2r:updates", namespaces=nsmap,
         )[0]
         references = root.xpath("/r2r:qareport/r2r:references", namespaces=nsmap)[0]
         root.replace(cert, certificate)
