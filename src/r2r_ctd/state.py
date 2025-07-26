@@ -97,6 +97,9 @@ def initialize_or_get_state(breakout: "Breakout", hex_path: Path) -> xr.Dataset:
     data = read_hex(hex_path)
     data.attrs["__path"] = state_path
 
+    data[R2R_QC_VARNAME] = xr.DataArray()
+    data[R2R_QC_VARNAME].attrs["station_name"] = hex_path.stem
+
     write_ds_r2r(data)
 
     return data
