@@ -7,7 +7,7 @@ from typing import Literal
 from lxml.builder import ElementMaker
 from lxml.etree import _Element
 
-import r2r_ctd.accessors  # noqa
+import r2r_ctd.accessors  # noqa: F401
 from r2r_ctd.breakout import Breakout
 from r2r_ctd.checks import (
     check_dt,
@@ -56,6 +56,7 @@ Reference = E.reference
 
 ALL = 100  # percent
 A_FEW = 50  # percent
+
 
 def overall_rating(rating: Literal["G", "R", "Y", "N", "X"]) -> _Element:
     return Rating(
@@ -142,26 +143,24 @@ class ResultAggregator:
 
     @cached_property
     def lat_lon_nav_valid(self) -> int:
-        results = []
-        for data in self.breakout:
-            results.append(
-                get_or_write_check(data, "lat_lon_valid", check_lat_lon_valid),
-            )
+        results = [
+            get_or_write_check(data, "lat_lon_valid", check_lat_lon_valid)
+            for data in self.breakout
+        ]
 
         return int((results.count(True) / len(results)) * 100)
 
     @cached_property
     def lat_lon_nav_range(self) -> int:
-        results = []
-        for data in self.breakout:
-            results.append(
-                get_or_write_check(
-                    data,
-                    "lat_lon_range",
-                    check_lat_lon,
-                    bbox=self.breakout.bbox,
-                ),
+        results = [
+            get_or_write_check(
+                data,
+                "lat_lon_range",
+                check_lat_lon,
+                bbox=self.breakout.bbox,
             )
+            for data in self.breakout
+        ]
 
         return int((results.count(True) / len(results)) * 100)
 
@@ -186,24 +185,24 @@ class ResultAggregator:
 
     @cached_property
     def time_valid(self) -> int:
-        results = []
-        for data in self.breakout:
-            results.append(get_or_write_check(data, "date_valid", check_time_valid))
+        results = [
+            get_or_write_check(data, "date_valid", check_time_valid)
+            for data in self.breakout
+        ]
 
         return int((results.count(True) / len(results)) * 100)
 
     @cached_property
     def time_range(self) -> int:
-        results = []
-        for data in self.breakout:
-            results.append(
-                get_or_write_check(
-                    data,
-                    "date_range",
-                    check_dt,
-                    dtrange=self.breakout.temporal_bounds(),
-                ),
+        results = [
+            get_or_write_check(
+                data,
+                "date_range",
+                check_dt,
+                dtrange=self.breakout.temporal_bounds(),
             )
+            for data in self.breakout
+        ]
 
         return int((results.count(True) / len(results)) * 100)
 

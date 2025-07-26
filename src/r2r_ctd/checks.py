@@ -34,10 +34,7 @@ def is_deck_test(path: Path) -> bool:
         "991",
         "990",
     )
-    for substr in substrs:
-        if substr in path.name.lower():
-            return True
-    return False
+    return any(substr in path.name.lower() for substr in substrs)
 
 
 def check_three_files(ds: xr.Dataset) -> bool:

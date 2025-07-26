@@ -7,6 +7,7 @@ from tempfile import TemporaryDirectory
 from typing import cast
 
 import docker
+from docker.models.containers import Container
 from odf.sbe.io import string_loader
 
 from r2r_ctd.exceptions import InvalidXMLCONError
@@ -17,46 +18,51 @@ SBEDP_IMAGE = "ghcr.io/cchdo/sbedp:v2025.07.1"
 
 logger = getLogger(__name__)
 
-_container = None  # singleton of the sbe container
 _tmpdir = TemporaryDirectory()  # singleton tempdir for IO with docker container
 
 
-def get_container():
-    global _container
-    if _container is not None:
-        return _container
-    logger.info("Launching container for running SBE software")
-    client = docker.from_env()
-    labels = ["us.rvdata.ctd-proc"]
-    _container = client.containers.run(
-        SBEDP_IMAGE,
-        auto_remove=True,
-        detach=True,
-        volumes={str(_tmpdir.name): {"bind": "/.wine/drive_c/proc", "mode": "rw"}},
-        labels=labels,
-        # The following binds an ephemeral port to 127.0.0.1 and not 0.0.0.0
-        # we are doing this for security reasons
-        # looks like the python typeshed is not correct here so I am casting to
-        # something it knows about
-        ports=cast("Mapping[str, None]", {"3000/tcp": ("127.0.0.1",)}),
-    )
-    logger.info(f"Container launched as {_container.name} with labels: {labels}")
+class ContainerGetter:
+    container: Container | None = None
 
-    def _kill_container():
-        logger.info(f"attempting to kill wine container: {_container.name}")
-        _container.kill()
+    def __call__(cls) -> Container:
+        if cls.container is not None:
+            return cls.container
+        logger.info("Launching container for running SBE software")
+        client = docker.from_env()
+        labels = ["us.rvdata.ctd-proc"]
+        cls.container = client.containers.run(
+            SBEDP_IMAGE,
+            auto_remove=True,
+            detach=True,
+            volumes={str(_tmpdir.name): {"bind": "/.wine/drive_c/proc", "mode": "rw"}},
+            labels=labels,
+            # The following binds an ephemeral port to 127.0.0.1 and not 0.0.0.0
+            # we are doing this for security reasons
+            # looks like the python typeshed is not correct here so I am casting to
+            # something it knows about
+            ports=cast("Mapping[str, None]", {"3000/tcp": ("127.0.0.1",)}),
+        )
+        logger.info(f"Container launched as {cls.container.name} with labels: {labels}")
 
-    atexit.register(_kill_container)
+        def _kill_container():
+            if cls.container is None:
+                return
+            logger.info(f"attempting to kill wine container: {cls.container.name}")
+            cls.container.kill()
 
-    tries = 10
-    while tries:
-        _container.reload()
-        if _container.health == "healthy":
-            return _container
-        time.sleep(0.5)
-        tries -= 1
-    raise Exception("Could not start container after 5 seconds")
+        atexit.register(_kill_container)
 
+        tries = 10
+        while tries:
+            cls.container.reload()
+            if cls.container.health == "healthy":
+                return cls.container
+            time.sleep(0.5)
+            tries -= 1
+        raise Exception("Could not start container after 5 seconds")
+
+
+get_container = ContainerGetter()
 
 conreport_sh = r"""export DISPLAY=:1
 export HODLL=libwow64fex.dll

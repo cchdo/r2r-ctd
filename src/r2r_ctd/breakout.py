@@ -91,11 +91,9 @@ class Breakout:
         # TODO: orig had support for .gz but not sure what to do with that
         stems = {".hex", ".dat"}
 
-        out = []
-        for path in self.manifest_dict:
-            if path.suffix.lower() in stems:
-                out.append(path)
-        return out
+        return list(
+            filter(lambda path: path.suffix.lower() in stems, self.manifest_dict)
+        )
 
     @cached_property
     def deck_test_paths(self) -> list[Path]:
@@ -158,8 +156,6 @@ class Breakout:
                     "Zero or more than one geographic bound in breakout xml",
                 )
             result.append(float(elm[0]))
-        if len(result) != 4:
-            raise ValueError("bug in bbox code?")
         return BBox(*result)
 
     def temporal_bounds(self) -> DTRange:
@@ -174,8 +170,6 @@ class Breakout:
             if len(elm) != 1:
                 raise ValueError("Zero or more than one temporal bound in breakout xml")
             result.append(datetime.strptime(elm[0], "%Y-%m-%d"))
-        if len(result) != 2:
-            raise ValueError("bug in temporal bound code?")
 
         return DTRange(*result)
 

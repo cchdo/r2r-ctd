@@ -78,11 +78,11 @@ def qa(gen_cnvs: bool, paths: tuple[Path, ...]):
         root = qa_xml.getroot()
         nsmap = root.nsmap
         cert = root.xpath("/r2r:qareport/r2r:certificate", namespaces=nsmap)[0]
-        updates = root.xpath(
+        root.xpath(
             "/r2r:qareport/r2r:provenance/r2r:updates",
             namespaces=nsmap,
         )[0]
-        references = root.xpath("/r2r:qareport/r2r:references", namespaces=nsmap)[0]
+        root.xpath("/r2r:qareport/r2r:references", namespaces=nsmap)[0]
         root.replace(cert, certificate)
 
         with open(get_xml_qa_path(breakout), "wb") as f:
