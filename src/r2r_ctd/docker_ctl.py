@@ -21,6 +21,18 @@ logger = getLogger(__name__)
 _tmpdir = TemporaryDirectory()  # singleton tempdir for IO with docker container
 
 
+def container_ready(container, timeout=5):
+    sleep = 0.5
+    tries = timeout / sleep
+    while tries:
+        container.reload()
+        if container.health == "healthy":
+            return True
+        time.sleep(sleep)
+        tries -= 1
+    return False
+
+
 class ContainerGetter:
     container: Container | None = None
 
@@ -52,14 +64,10 @@ class ContainerGetter:
 
         atexit.register(_kill_container)
 
-        tries = 10
-        while tries:
-            cls.container.reload()
-            if cls.container.health == "healthy":
-                return cls.container
-            time.sleep(0.5)
-            tries -= 1
-        raise Exception("Could not start container after 5 seconds")
+        if container_ready(cls.container):
+            return cls.container
+        else:
+            raise Exception("Could not start container after 5 seconds")
 
 
 get_container = ContainerGetter()
@@ -104,19 +112,19 @@ def run_conreport(xmlcon: NamedFile):
         conreport_logs = container.exec_run(
             f'su -c "/.wine/drive_c/proc/{work_dir.name}/sh/conreport.sh" abc',
             demux=True,
+            stream=True,
             environment={"TMPDIR_R2R": work_dir.name},
         )
-        stdout, stderr = conreport_logs.output
-
-        if stdout is not None:
-            logger.info(stdout.decode())
-        if stderr is not None:
-            logger.debug(stderr.decode())
-            if b"ReadConFile - failed to read" in stderr:
-                logger.critical(
-                    "SBE ConReport.exe could not convert the xmlcon to a text report",
-                )
-                raise InvalidXMLCONError("Could not read XMLCON using seabird")
+        for stdout, stderr in conreport_logs.output:
+            if stdout is not None:
+                logger.info(f"{container.name} - {stdout.decode().strip()}")
+            if stderr is not None:
+                logger.debug(f"{container.name} - {stderr.decode().strip()}")
+                if b"ReadConFile - failed to read" in stderr:
+                    logger.critical(
+                        "SBE ConReport.exe could not convert the xmlcon to a text report",
+                    )
+                    raise InvalidXMLCONError("Could not read XMLCON using seabird")
 
         out_path = outdir / infile.with_suffix(".txt").name
 
@@ -178,6 +186,7 @@ def run_sbebatch(
         batch_logs = container.exec_run(
             f'su -c "/.wine/drive_c/proc/{work_dir.name}/sh/sbebatch.sh" abc',
             demux=True,
+            stream=True,
             environment={
                 "TMPDIR_R2R": work_dir.name,
                 "R2R_HEXNAME": hex.name,
@@ -185,11 +194,12 @@ def run_sbebatch(
                 "R2R_TMPCNV": hex_path.with_suffix(".cnv"),
             },
         )
-        stdout, stderr = batch_logs.output
-        if stderr is not None:
-            logger.debug(stderr.decode())
-        if stdout is not None:
-            logger.info(stdout.decode())
+        for stdout, stderr in batch_logs.output:
+            if stderr is not None:
+                msg = stderr.decode().strip()
+                logger.debug(msg)
+            if stdout is not None:
+                logger.info(stdout.decode().strip())
 
         cnv_24hz = outdir / f"{hex_path.stem}_24hz.cnv"
         cnv_1db = outdir / f"{hex_path.stem}_1db.cnv"
