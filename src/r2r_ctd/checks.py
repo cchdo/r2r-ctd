@@ -4,8 +4,6 @@ from typing import TYPE_CHECKING
 
 import xarray as xr
 
-from r2r_ctd.derived import get_latitude, get_longitude, get_time
-
 if TYPE_CHECKING:
     from r2r_ctd.breakout import BBox, DTRange
 
@@ -58,8 +56,8 @@ def check_lat_lon_valid(ds: xr.Dataset) -> bool:
     if "hdr" not in ds:
         return False
 
-    lon = get_longitude(ds)
-    lat = get_latitude(ds)
+    lon = ds.r2r.longitude
+    lat = ds.r2r.latitude
 
     return None not in (lon, lat)
 
@@ -69,17 +67,15 @@ def check_time_valid(ds: xr.Dataset) -> bool:
     if "hdr" not in ds:
         return False
 
-    dt = get_time(ds)
-
-    return dt is not None
+    return ds.r2r.time is not None
 
 
 def check_lat_lon(ds: xr.Dataset, bbox: "BBox") -> bool:
     if "hdr" not in ds:
         return False
 
-    lon = get_longitude(ds)
-    lat = get_latitude(ds)
+    lon = ds.r2r.longitude
+    lat = ds.r2r.latitude
 
     if None in (lon, lat):
         return False
@@ -91,7 +87,7 @@ def check_dt(ds: xr.Dataset, dtrange: "DTRange") -> bool:
     if "hdr" not in ds:
         return False
 
-    dt = get_time(ds)
+    dt = ds.r2r.time
 
     if dt is None:
         return False

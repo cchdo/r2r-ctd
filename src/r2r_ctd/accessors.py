@@ -3,7 +3,7 @@ from functools import cached_property
 import xarray as xr
 
 from r2r_ctd.checks import check_lat_lon_valid, check_three_files
-from r2r_ctd.derived import get_latitude, get_longitude
+from r2r_ctd.derived import get_latitude, get_longitude, get_time
 from r2r_ctd.state import get_or_write_check
 
 
@@ -19,6 +19,10 @@ class R2RAccessor:
     @cached_property
     def longitude(self):
         return get_longitude(self._obj)
+
+    @cached_property
+    def time(self):
+        return get_time(self._obj)
 
     @cached_property
     def all_three_files(self):
