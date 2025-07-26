@@ -1,6 +1,7 @@
 import atexit
 import time
 from collections.abc import Mapping
+from functools import wraps
 from logging import getLogger
 from pathlib import Path
 from tempfile import TemporaryDirectory
@@ -10,11 +11,11 @@ import docker
 from docker.models.containers import Container
 from odf.sbe.io import string_loader
 
-from r2r_ctd.exceptions import InvalidXMLCONError
+from r2r_ctd.exceptions import InvalidXMLCONError, WineDebuggerEnteredError
 from r2r_ctd.sbe import batch
 from r2r_ctd.state import NamedFile
 
-SBEDP_IMAGE = "ghcr.io/cchdo/sbedp:v2025.07.0"  # in testing, this version seems to crash less than v2025.07.1
+SBEDP_IMAGE = "ghcr.io/cchdo/sbedp:v2025.07.1"
 
 logger = getLogger(__name__)
 
@@ -145,6 +146,35 @@ exit 0;
 """
 
 
+def with_retries(retires=3):
+    def decorator(func):
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            container = get_container()
+            tries = 0
+            while tries <= retires:
+                try:
+                    return func(*args, **kwargs)
+                except WineDebuggerEnteredError as err:
+                    logger.critical(
+                        "Wine appears to have entered the debugger, retrying"
+                    )
+                    tries += 1
+                    logger.critical(f"Retry {tries} of {retires}")
+                    logger.critical(f"Restarting {container.name}")
+                    container.restart()
+                    logger.critical(f"Waiting for {container.name} to be ready")
+                    if not container_ready(container):
+                        raise Exception(
+                            "Could not restart container after 5 seconds"
+                        ) from err
+
+        return wrapper
+
+    return decorator
+
+
+@with_retries(3)
 def run_sbebatch(
     hex: NamedFile,
     xmlcon: NamedFile,
@@ -197,11 +227,11 @@ def run_sbebatch(
         for stdout, stderr in batch_logs.output:
             if stderr is not None:
                 msg = stderr.decode().strip()
-                logger.debug(msg)
+                logger.debug(f"{container.name} - {msg}")
                 if "starting debugger" in msg:
-                    raise Exception("wine crashed?")
+                    raise WineDebuggerEnteredError("wine crashed?")
             if stdout is not None:
-                logger.info(stdout.decode().strip())
+                logger.info(f"{container.name} - {stdout.decode().strip()}")
 
         cnv_24hz = outdir / f"{hex_path.stem}_24hz.cnv"
         cnv_1db = outdir / f"{hex_path.stem}_1db.cnv"
