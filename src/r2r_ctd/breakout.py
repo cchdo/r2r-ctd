@@ -2,6 +2,7 @@ from dataclasses import dataclass
 from datetime import datetime, timedelta
 from functools import cached_property
 from hashlib import file_digest
+from logging import getLogger
 from pathlib import Path
 from typing import NamedTuple
 
@@ -9,6 +10,8 @@ from lxml import etree
 
 from r2r_ctd.checks import is_deck_test
 from r2r_ctd.state import initialize_or_get_state
+
+logger = getLogger(__name__)
 
 
 class BBox(NamedTuple):
@@ -40,6 +43,7 @@ class DTRange(NamedTuple):
 
     def contains(self, dt: datetime) -> bool:
         end = self.dtend + timedelta(days=1)  # check the end of the day
+        logger.debug(f"Checking if {dt} is between {self.dtstart} and {end}")
         return self.dtstart <= dt < end
 
 

@@ -14,7 +14,7 @@ from r2r_ctd.exceptions import InvalidXMLCONError
 from r2r_ctd.sbe import batch
 from r2r_ctd.state import NamedFile
 
-SBEDP_IMAGE = "ghcr.io/cchdo/sbedp:v2025.07.1"
+SBEDP_IMAGE = "ghcr.io/cchdo/sbedp:v2025.07.0"  # in testing, this version seems to crash less than v2025.07.1
 
 logger = getLogger(__name__)
 
@@ -198,6 +198,8 @@ def run_sbebatch(
             if stderr is not None:
                 msg = stderr.decode().strip()
                 logger.debug(msg)
+                if "starting debugger" in msg:
+                    raise Exception("wine crashed?")
             if stdout is not None:
                 logger.info(stdout.decode().strip())
 

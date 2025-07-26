@@ -45,9 +45,6 @@ def qa(gen_cnvs: bool, paths: tuple[Path, ...]):
         ra = ResultAggregator(breakout)
         certificate = ra.certificate
 
-        if gen_cnvs:
-            ra.gen_cnvs()
-
         # write geoCSV
         get_geoCSV_path(breakout).write_text(ra.gen_geoCSV())
 
@@ -62,13 +59,13 @@ def qa(gen_cnvs: bool, paths: tuple[Path, ...]):
             con_path.write_text(station.conreport.item())
 
         for station in breakout:
-            if "cnv_24hz" in station:
+            if gen_cnvs and station.r2r.cnv_24hz:
                 cnv24_path = get_product_path(breakout) / cast(
                     "str",
                     station.cnv_24hz.attrs["filename"],
                 )
                 cnv24_path.write_text(station.cnv_24hz.item())
-            if "cnv_1db" in station:
+            if gen_cnvs and station.r2r.cnv_1db:
                 cnv1db_path = get_product_path(breakout) / cast(
                     "str",
                     station.cnv_1db.attrs["filename"],

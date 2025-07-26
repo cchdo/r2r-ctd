@@ -9,12 +9,6 @@ from lxml.etree import _Element
 
 import r2r_ctd.accessors  # noqa: F401
 from r2r_ctd.breakout import Breakout
-from r2r_ctd.checks import (
-    check_dt,
-    check_lat_lon,
-    check_lat_lon_valid,
-    check_time_valid,
-)
 from r2r_ctd.derived import (
     get_conreport_sn,
     get_hdr_sn,
@@ -22,12 +16,9 @@ from r2r_ctd.derived import (
     get_longitude,
     get_model,
     get_time,
-    make_cnvs,
-    make_conreport,
 )
 from r2r_ctd.state import (
-    get_or_write_check,
-    get_or_write_derived_file,
+    R2R_QC_VARNAME,
 )
 
 E = ElementMaker(
@@ -143,25 +134,12 @@ class ResultAggregator:
 
     @cached_property
     def lat_lon_nav_valid(self) -> int:
-        results = [
-            get_or_write_check(data, "lat_lon_valid", check_lat_lon_valid)
-            for data in self.breakout
-        ]
-
+        results = [data.r2r.lat_lon_valid for data in self.breakout]
         return int((results.count(True) / len(results)) * 100)
 
     @cached_property
     def lat_lon_nav_range(self) -> int:
-        results = [
-            get_or_write_check(
-                data,
-                "lat_lon_range",
-                check_lat_lon,
-                bbox=self.breakout.bbox,
-            )
-            for data in self.breakout
-        ]
-
+        results = [data.r2r.lon_lat_in(self.breakout.bbox) for data in self.breakout]
         return int((results.count(True) / len(results)) * 100)
 
     @property
@@ -185,25 +163,14 @@ class ResultAggregator:
 
     @cached_property
     def time_valid(self) -> int:
-        results = [
-            get_or_write_check(data, "date_valid", check_time_valid)
-            for data in self.breakout
-        ]
-
+        results = [data.r2r.time_valid for data in self.breakout]
         return int((results.count(True) / len(results)) * 100)
 
     @cached_property
     def time_range(self) -> int:
         results = [
-            get_or_write_check(
-                data,
-                "date_range",
-                check_dt,
-                dtrange=self.breakout.temporal_bounds(),
-            )
-            for data in self.breakout
+            data.r2r.time_in(self.breakout.temporal_bounds()) for data in self.breakout
         ]
-
         return int((results.count(True) / len(results)) * 100)
 
     @property
@@ -266,11 +233,11 @@ class ResultAggregator:
     def info_model_number(self):
         model = ""
         for data in self.breakout:
-            conreport = get_or_write_derived_file(data, "conreport", make_conreport)
+            conreport = data.r2r.conreport
 
             if conreport is None:
                 continue
-            model = get_model(conreport.item()) or ""
+            model = get_model(conreport) or ""
 
         return Info(model, name="Model Number of CTD Instrument", uom="Unitless")
 
@@ -313,8 +280,7 @@ class ResultAggregator:
         problem_casts = []
         for station in self.breakout.stations_hex_paths:
             data = self.breakout[station]
-            conreport = get_or_write_derived_file(data, "conreport", make_conreport)
-            if conreport is None:
+            if data.r2r.conreport is None:
                 problem_casts.append(station.stem)
 
         return Info(
@@ -336,10 +302,10 @@ class ResultAggregator:
         problem_casts = []
         for station in self.breakout.stations_hex_paths:
             data = self.breakout[station]
-            conreport = get_or_write_derived_file(data, "conreport", make_conreport)
+            conreport = data.r2r.conreport
             if conreport is None:
                 continue
-            models = get_conreport_sn(conreport.item(), "Temperature")
+            models = get_conreport_sn(conreport, "Temperature")
             sn = get_hdr_sn(data.hdr.item(), "Temperature")
             if sn not in models:
                 problem_casts.append(station.stem)
@@ -354,10 +320,10 @@ class ResultAggregator:
         problem_casts = []
         for station in self.breakout.stations_hex_paths:
             data = self.breakout[station]
-            conreport = get_or_write_derived_file(data, "conreport", make_conreport)
+            conreport = data.r2r.conreport
             if conreport is None:
                 continue
-            models = get_conreport_sn(conreport.item(), "Conductivity")
+            models = get_conreport_sn(conreport, "Conductivity")
             sn = get_hdr_sn(data.hdr.item(), "Conductivity")
             if sn not in models:
                 problem_casts.append(station.stem)
@@ -369,11 +335,12 @@ class ResultAggregator:
 
     @cached_property
     def info_casts_with_bad_nav(self):
-        problem_casts = []
-        for station in self.breakout.stations_hex_paths:
-            data = self.breakout[station]
-            if not get_or_write_check(data, "lat_lon_valid", check_lat_lon_valid):
-                problem_casts.append(station.stem)
+        problem_casts = [
+            data[R2R_QC_VARNAME].attrs["station_name"]
+            for data in self.breakout
+            if data.r2r.lat_lon_valid
+        ]
+
         return Info(
             " ".join(problem_casts),
             name="Casts with Blank, missing, or unrecognizable NAV",
@@ -382,33 +349,16 @@ class ResultAggregator:
 
     @cached_property
     def info_casts_failed_nav_bounds(self):
-        problem_casts = []
-        for station in self.breakout.stations_hex_paths:
-            data = self.breakout[station]
-            if not get_or_write_check(
-                data,
-                "lat_lon_range",
-                check_lat_lon,
-                bbox=self.breakout.bbox,
-            ):
-                problem_casts.append(station.stem)
+        problem_casts = [
+            data[R2R_QC_VARNAME].attrs["station_name"]
+            for data in self.breakout
+            if not data.r2r.lon_lat_in(self.breakout.bbox)
+        ]
         return Info(
             " ".join(problem_casts),
             name="Casts that Failed NAV Boundary Tests",
             uom="List",
         )
-
-    def gen_cnvs(self):
-        for station in self.breakout.stations_hex_paths:
-            data = self.breakout[station]
-
-            # if the conreport failed, don't bother with this cast
-            conreport = get_or_write_derived_file(data, "conreport", make_conreport)
-            if conreport is None:
-                continue
-
-            get_or_write_derived_file(data, "cnv_24hz", make_cnvs)
-            get_or_write_derived_file(data, "cnv_1db", make_cnvs)
 
     def gen_geoCSV(self):
         header = textwrap.dedent(f"""\
@@ -432,7 +382,6 @@ class ResultAggregator:
         data_lines = []
         for station in self.breakout.stations_hex_paths:
             data = self.breakout[station]
-            conreport = get_or_write_derived_file(data, "conreport", make_conreport)
 
             lon = get_longitude(data) or ""
             lat = get_latitude(data) or ""
@@ -445,8 +394,8 @@ class ResultAggregator:
                 epoch = f"{time.timestamp():.0f}"
 
             model = ""
-            if conreport:
-                model = get_model(conreport.item()) or ""
+            if conreport := data.r2r.conreport:
+                model = get_model(conreport) or ""
 
             data_lines.append(
                 ",".join(
