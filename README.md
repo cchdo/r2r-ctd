@@ -12,15 +12,15 @@ This operates on an r2r CTD breakout directory that assumes the following struct
     * The bounding box and temporal bounds are in this file.
 
 Polishing steps now needed:
-- [ ] XML QA report polishing
-  - [ ] Make an "r2r:update" record in r2r:provenance/r2r:updates (needs software versioning scheme sorted)
-  - [ ] Add geoCSV reference to "r2r:references"
-  - [ ] Add conreport references to "r2r:references"
-- [ ] Actually write out all the derived files to disk in the right structure (things are just in memory/state files)
-  - [ ] geoCSV
-  - [ ] conreports
-  - [ ] cnv files (what structure? looks like maybe /products/r2rctd/*.cnv)
-  - [ ] the XML QA report
+- [X] XML QA report polishing
+  - [X] Make an "r2r:update" record in r2r:provenance/r2r:updates (needs software versioning scheme sorted)
+  - [X] Add geoCSV reference to "r2r:references"
+  - [X] Add conreport references to "r2r:references"
+- [X] Actually write out all the derived files to disk in the right structure (things are just in memory/state files)
+  - [X] geoCSV
+  - [X] conreports
+  - [X] cnv files (what structure? looks like maybe /products/r2rctd/*.cnv)
+  - [X] the XML QA report
 
 Steps needed to do:
 - [x] Check manifest file against breakout contents
@@ -35,6 +35,11 @@ Steps needed to do:
   - [X] collect "cast info" (there is a bunch that goes in here)
   - [X] write a record in the geoCSV
   - [X] make seabird output products (dockerized sbe software)
+
+Progress as of 2025-07-28
+* All major components are complete with the exception of checking for missing time/bounds on the breakout itself
+* Documentation needs to be made
+* Perhaps some polishing of the main() function should be done, mostly getting the xml manipulation put someplace nice.
 
 Progress as of 2025-07-23
 * A longish break to recover from an injury...
