@@ -223,8 +223,7 @@ class ResultAggregator:
 
     @cached_property
     def info_number_bottles(self):
-        # TODO: This needs to check the files to see if any bottles were actually fired
-        result = ["bl" in data for data in self.breakout]
+        result = [data.r2r.bottles_fired for data in self.breakout]
 
         return Info(
             str(result.count(True)),

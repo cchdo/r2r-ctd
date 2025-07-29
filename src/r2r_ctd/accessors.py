@@ -78,3 +78,38 @@ class R2RAccessor:
         cnv_1db = get_or_write_derived_file(self._obj, "cnv_1db", make_cnvs)
         if cnv_1db:
             return cnv_1db.item()
+
+    @cached_property
+    def bottles_fired(self) -> bool:
+        """This cast as bottle trip records
+
+        A trip record has 5 components:
+
+        * sequence (int)
+        * carrousel position (int)
+        * timestamp (time string)
+        * scan start (int)
+        * scan end (int)
+
+        this works by checking each line to see if any of the 4 "int" components parse as ints
+        and returning true if any of them can.
+
+        The bl file records every attempt to close a bottle and does not necessarily reflect how many bottles actually closed
+        """
+        COMPONENTS = 5
+        if "bl" in self._obj:
+            for line in self._obj.bl.item().splitlines():
+                parts = line.split(",")
+                if len(parts) != COMPONENTS:
+                    continue
+
+                try:
+                    int(parts[0].strip())
+                    int(parts[1].strip())
+                    int(parts[-2].strip())
+                    int(parts[-1].strip())
+                    return True
+                except ValueError:
+                    continue
+
+        return False
