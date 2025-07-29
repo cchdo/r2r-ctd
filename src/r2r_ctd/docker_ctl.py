@@ -146,21 +146,21 @@ exit 0;
 """
 
 
-def with_retries(retires=3):
+def attempts(tires=3):
     def decorator(func):
         @wraps(func)
         def wrapper(*args, **kwargs):
             container = get_container()
-            tries = 0
-            while tries <= retires:
+            attempt = 1
+            while attempt <= tires:
                 try:
                     return func(*args, **kwargs)
                 except WineDebuggerEnteredError as err:
                     logger.critical(
                         "Wine appears to have entered the debugger, retrying"
                     )
-                    tries += 1
-                    logger.critical(f"Retry {tries} of {retires}")
+                    attempt += 1
+                    logger.critical(f"Attempt {attempt} of {tires}")
                     logger.critical(f"Restarting {container.name}")
                     container.restart()
                     logger.critical(f"Waiting for {container.name} to be ready")
@@ -174,7 +174,7 @@ def with_retries(retires=3):
     return decorator
 
 
-@with_retries(3)
+@attempts(3)
 def run_sbebatch(
     hex: NamedFile,
     xmlcon: NamedFile,
