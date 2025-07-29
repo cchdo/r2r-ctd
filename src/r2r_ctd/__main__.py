@@ -6,7 +6,7 @@ import click
 from rich.logging import RichHandler
 
 from r2r_ctd.breakout import Breakout
-from r2r_ctd.reporting import ResultAggregator
+from r2r_ctd.reporting import ResultAggregator, get_new_references, get_update_record
 from r2r_ctd.state import (
     get_config_path,
     get_geoCSV_path,
@@ -75,11 +75,15 @@ def qa(gen_cnvs: bool, paths: tuple[Path, ...]):
         root = qa_xml.getroot()
         nsmap = root.nsmap
         cert = root.xpath("/r2r:qareport/r2r:certificate", namespaces=nsmap)[0]
-        root.xpath(
+        updates = root.xpath(
             "/r2r:qareport/r2r:provenance/r2r:updates",
             namespaces=nsmap,
         )[0]
-        root.xpath("/r2r:qareport/r2r:references", namespaces=nsmap)[0]
+        updates.append(get_update_record())
+        references = root.xpath("/r2r:qareport/r2r:references", namespaces=nsmap)[0]
+
+        new_refs = get_new_references(breakout)
+        references.extend(new_refs)
         root.replace(cert, certificate)
 
         with open(get_xml_qa_path(breakout), "wb") as f:

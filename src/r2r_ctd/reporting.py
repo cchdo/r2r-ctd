@@ -1,7 +1,8 @@
 import textwrap
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import UTC, datetime
 from functools import cached_property
+from importlib.metadata import metadata, version
 from typing import Literal
 
 from lxml.builder import ElementMaker
@@ -19,6 +20,8 @@ from r2r_ctd.derived import (
 )
 from r2r_ctd.state import (
     R2R_QC_VARNAME,
+    get_config_path,
+    get_geoCSV_path,
 )
 
 E = ElementMaker(
@@ -432,3 +435,40 @@ class ResultAggregator:
                 self.info_casts_failed_nav_bounds,
             ),
         )
+
+
+def get_update_record() -> _Element:
+    return Update(
+        Process(metadata("r2r_ctd")["Name"], version=version("r2r_ctd")),
+        Time(datetime.now(tz=UTC).strftime("%Y-%m-%dT%H:%M:%SZ")),
+        description="Quality Assessment (QA)",
+    )
+
+
+def get_new_references(breakout: "Breakout") -> list[_Element]:
+    """Return a list of new Reference xml elements
+
+    This crawls the output directories to check was was actually created to build its list
+    """
+    # this list is ordered, geoCSV first
+    references: list[_Element] = []
+    base_src = f"https://service.rvdata.us/data/cruise/{breakout.cruise_id}/fileset/{breakout.fileset_id}"
+    geocsv_path = get_geoCSV_path(breakout)
+    if geocsv_path.exists():
+        references.append(
+            Reference(
+                f"Metadata for all processed CTD files on cruise {breakout.cruise_id} (geoCSV)",
+                src=f"{base_src}/qa/{geocsv_path.name}",
+            )
+        )
+
+    config_path = get_config_path(breakout)
+    references.extend(
+        Reference(
+            f"CTD Configuration Report: {path.stem}",
+            src=f"{base_src}/qa/config/{path.name}",
+        )
+        for path in sorted(config_path.glob("*.txt"))
+    )
+
+    return references
