@@ -133,6 +133,8 @@ def get_model(conreport: str) -> str | None:
 
 def _conreport_extract_sensors(conreport: str) -> list[str]:
     sensors = []
+    model = get_model(conreport)
+
     for line in conreport.splitlines():
         # there are 3 "virtual" sensors that get added if certain flags are set (position and time)
         no_whitespace_line = line.replace(" ", "").lower()
@@ -149,6 +151,9 @@ def _conreport_extract_sensors(conreport: str) -> list[str]:
             sensors.append(sensor.strip())
         except ValueError:
             pass
+
+    if model == "SBE911":
+        sensors.append("pumps")
 
     return sensors
 
