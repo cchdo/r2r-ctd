@@ -233,9 +233,12 @@ def run_sbebatch(
             if stdout is not None:
                 logger.info(f"{container.name} - {stdout.decode().strip()}")
 
-        cnv_24hz = outdir / f"{hex_path.stem}_24hz.cnv"
+        cnv_24hz = outdir / f"{hex_path.stem}.cnv"
         cnv_1db = outdir / f"{hex_path.stem}_1db.cnv"
 
         cnv_24hz = string_loader(cnv_24hz, "cnv_24hz").cnv_24hz
         cnv_1db = string_loader(cnv_1db, "cnv_1db").cnv_1db
+
+        cnv_24hz_rename = outdir / f"{hex_path.stem}_24hz.cnv"
+        cnv_24hz.attrs["filename"] = cnv_24hz_rename.name
         return {"cnv_24hz": cnv_24hz, "cnv_1db": cnv_1db}
