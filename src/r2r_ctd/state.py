@@ -49,13 +49,16 @@ def get_state_path(breakout: "Breakout", hex_path: Path) -> Path:
     return nc_dir / nc_fname
 
 
-def get_xml_qa_path(breakout: "Breakout") -> Path:
-    xml_qa_name = breakout.qa_template_path.with_suffix(".xml").name
-
-    qa_dir = breakout.path / "proc"
+def get_qa_dir(breakout: "Breakout") -> Path:
+    qa_dir = breakout.path / "proc" / "qa"
     qa_dir.mkdir(exist_ok=True, parents=True)
 
-    return qa_dir / xml_qa_name
+    return qa_dir
+
+
+def get_xml_qa_path(breakout: "Breakout") -> Path:
+    xml_qa_name = breakout.qa_template_path.with_suffix(".xml").name
+    return get_qa_dir(breakout) / xml_qa_name
 
 
 def get_geoCSV_path(breakout: "Breakout") -> Path:
@@ -64,24 +67,21 @@ def get_geoCSV_path(breakout: "Breakout") -> Path:
         "_ctd_metdata.geoCSV",
     )
 
-    qa_dir = breakout.path / "proc"
-    qa_dir.mkdir(exist_ok=True, parents=True)
-
-    return qa_dir / geocsv_name
+    return get_qa_dir(breakout) / geocsv_name
 
 
 def get_config_path(breakout: "Breakout") -> Path:
-    qa_dir = breakout.path / "proc" / "config"
-    qa_dir.mkdir(exist_ok=True, parents=True)
+    config_path = get_qa_dir(breakout) / "config"
+    config_path.mkdir(exist_ok=True, parents=True)
 
-    return qa_dir
+    return config_path
 
 
 def get_product_path(breakout: "Breakout") -> Path:
-    qa_dir = breakout.path / "proc" / "products" / "r2rctd"
-    qa_dir.mkdir(exist_ok=True, parents=True)
+    product_dir = breakout.path / "proc" / "products" / "r2rctd"
+    product_dir.mkdir(exist_ok=True, parents=True)
 
-    return qa_dir
+    return product_dir
 
 
 def initialize_or_get_state(breakout: "Breakout", hex_path: Path) -> xr.Dataset:
