@@ -22,6 +22,7 @@ from r2r_ctd.state import (
     R2R_QC_VARNAME,
     get_config_path,
     get_geoCSV_path,
+    get_xml_qa_path,
 )
 
 E = ElementMaker(
@@ -469,3 +470,32 @@ def get_new_references(breakout: "Breakout") -> list[_Element]:
     )
 
     return references
+
+
+def write_xml_qa_report(breakout: "Breakout", certificate: _Element):
+    qa_xml = breakout.qa_template_xml
+    root = qa_xml.getroot()
+    cert = root.xpath("/r2r:qareport/r2r:certificate", namespaces=breakout.namespaces)[
+        0
+    ]
+    updates = root.xpath(
+        "/r2r:qareport/r2r:provenance/r2r:updates",
+        namespaces=breakout.namespaces,
+    )[0]
+    updates.append(get_update_record())
+    references = root.xpath(
+        "/r2r:qareport/r2r:references", namespaces=breakout.namespaces
+    )[0]
+
+    new_refs = get_new_references(breakout)
+    references.extend(new_refs)
+    root.replace(cert, certificate)
+
+    with get_xml_qa_path(breakout).open("wb") as f:
+        qa_xml.write(
+            f,
+            pretty_print=True,
+            xml_declaration=True,
+            method="xml",
+            encoding="UTF-8",
+        )

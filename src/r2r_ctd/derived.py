@@ -19,8 +19,6 @@ from r2r_ctd.state import NamedFile
 
 logger = getLogger(__name__)
 
-E = ElementMaker()
-
 
 def _parse_coord(coord: str) -> float | None:
     hem_ints = {
@@ -197,6 +195,7 @@ def get_hdr_sn(hdr: str, instrument: str) -> str | None:
 
 
 def make_derive_psa(con_report: str) -> bytes:
+    E = ElementMaker()
     template = derive_template()
     sensors = _con_report_extract_sensors(con_report)
     is_dual_channel = {"Temperature, 2", "Conductivity, 2"} <= set(sensors)
