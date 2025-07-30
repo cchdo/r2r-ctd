@@ -67,6 +67,8 @@ def get_longitude(ds: xr.Dataset) -> float | None:
     if (value := headers.get("NMEA Longitude")) is not None:
         return _parse_coord(value)
 
+    return None
+
 
 def get_latitude(ds: xr.Dataset) -> float | None:
     """Get the cast latitude from NMEA header
@@ -76,6 +78,8 @@ def get_latitude(ds: xr.Dataset) -> float | None:
     headers = parse_hdr(ds.hdr.item())
     if (value := headers.get("NMEA Latitude")) is not None:
         return _parse_coord(value)
+
+    return None
 
 
 def _normalize_date_strings(date: str) -> str:
@@ -113,6 +117,7 @@ def get_time(ds: xr.Dataset) -> datetime | None:
             return dt
 
     logger.warning("No time value could be parsed")
+    return None
 
 
 def make_conreport(ds: xr.Dataset):
@@ -130,6 +135,8 @@ def get_model(conreport: str) -> str | None:
     if "Configuration report for SBE 19plus" in conreport:
         return "SBE19"
 
+    return None
+
 
 def _conreport_extract_sensors(conreport: str) -> list[str]:
     sensors = []
@@ -146,7 +153,7 @@ def _conreport_extract_sensors(conreport: str) -> list[str]:
 
         try:
             section, title = line.split(")", maxsplit=1)
-            section = int(section)
+            int(section)  # we only care that this doesn't raise
             _, sensor = title.split(",", maxsplit=1)
             sensors.append(sensor.strip())
         except ValueError:
@@ -159,13 +166,12 @@ def _conreport_extract_sensors(conreport: str) -> list[str]:
 
 
 def get_conreport_sn(conreport: str, instrument: str) -> set[str]:
-    section = 0
     title = ""
     sns = []
     for line in conreport.splitlines():
         try:
             section, title = line.split(")", maxsplit=1)
-            section = int(section)
+            int(section)
         except ValueError:
             pass
         if instrument not in title:

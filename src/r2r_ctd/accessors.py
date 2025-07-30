@@ -61,6 +61,8 @@ class R2RAccessor:
         if conreport:
             return conreport.item()
 
+        return None
+
     @cached_property
     def cnv_24hz(self) -> str | None:
         if self.conreport is None:
@@ -70,6 +72,8 @@ class R2RAccessor:
         if cnv_24hz:
             return cnv_24hz.item()
 
+        return None
+
     @cached_property
     def cnv_1db(self) -> str | None:
         if self.conreport is None:
@@ -78,6 +82,8 @@ class R2RAccessor:
         cnv_1db = get_or_write_derived_file(self._obj, "cnv_1db", make_cnvs)
         if cnv_1db:
             return cnv_1db.item()
+
+        return None
 
     @cached_property
     def bottles_fired(self) -> bool:
