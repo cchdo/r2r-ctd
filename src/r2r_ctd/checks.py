@@ -70,8 +70,10 @@ def check_time_valid(ds: xr.Dataset) -> bool:
     return ds.r2r.time is not None
 
 
-def check_lat_lon(ds: xr.Dataset, bbox: "BBox") -> bool:
+def check_lat_lon(ds: xr.Dataset, bbox: "BBox | None") -> bool:
     if "hdr" not in ds:
+        return False
+    if bbox is None:
         return False
 
     lon = ds.r2r.longitude
@@ -83,8 +85,11 @@ def check_lat_lon(ds: xr.Dataset, bbox: "BBox") -> bool:
     return bbox.contains(lon, lat)
 
 
-def check_dt(ds: xr.Dataset, dtrange: "DTRange") -> bool:
+def check_dt(ds: xr.Dataset, dtrange: "DTRange | None") -> bool:
     if "hdr" not in ds:
+        return False
+
+    if dtrange is None:
         return False
 
     dt = ds.r2r.time

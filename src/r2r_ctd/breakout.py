@@ -143,8 +143,8 @@ class Breakout:
         nsmap = root.nsmap
         return self.qa_template_xml.find(".//r2r:fileset_id", namespaces=nsmap).text
 
-    @property
-    def bbox(self) -> BBox:
+    @cached_property
+    def bbox(self) -> BBox | None:
         """The bbox of the cruise in geojson bbox format/order"""
         root = self.qa_template_xml.getroot()
         nsmap = root.nsmap
@@ -156,13 +156,20 @@ class Breakout:
         result = []
         for elm in (w, s, e, n):
             if len(elm) != 1:
-                raise ValueError(
-                    "Zero or more than one geographic bound in breakout xml",
+                logger.error("Breakout XML has invalid cruise bounding box")
+                return None
+            try:
+                result.append(float(elm[0]))
+            except ValueError:
+                logger.error(
+                    "Breakout XML bounding box has values that could not be parsed as float: {elm[0]}"
                 )
-            result.append(float(elm[0]))
+                return None
+
         return BBox(*result)
 
-    def temporal_bounds(self) -> DTRange:
+    @cached_property
+    def temporal_bounds(self) -> DTRange | None:
         root = self.qa_template_xml.getroot()
         nsmap = root.nsmap
         prefix = "/r2r:qareport/r2r:filesetinfo/r2r:cruise"
@@ -172,8 +179,13 @@ class Breakout:
         result = []
         for elm in (start, stop):
             if len(elm) != 1:
-                raise ValueError("Zero or more than one temporal bound in breakout xml")
-            result.append(datetime.strptime(elm[0], "%Y-%m-%d"))
+                logger.error("Zero or more than one temporal bound in breakout xml")
+                return None
+            try:
+                result.append(datetime.strptime(elm[0], "%Y-%m-%d"))
+            except ValueError:
+                logger.error(f"Could not parse date in breakout as date: {elm[0]}")
+                return None
 
         return DTRange(*result)
 

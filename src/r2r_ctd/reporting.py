@@ -150,9 +150,8 @@ class ResultAggregator:
         if self.lat_lon_nav_valid == 0:  # no readable positions to test
             return "X"  # black
 
-        # TODO: handle case of breakout itself not having bounds
-        # if self.breakout.bbox:
-        #   return "N" # grey
+        if self.breakout.bbox is None:
+            return "N"  # grey
 
         if self.lat_lon_nav_range == ALL:
             return "G"
@@ -172,7 +171,7 @@ class ResultAggregator:
     @cached_property
     def time_range(self) -> int:
         results = [
-            data.r2r.time_in(self.breakout.temporal_bounds()) for data in self.breakout
+            data.r2r.time_in(self.breakout.temporal_bounds) for data in self.breakout
         ]
         return int((results.count(True) / len(results)) * 100)
 
@@ -181,9 +180,8 @@ class ResultAggregator:
         if self.time_valid == 0:  # no readable dates to test
             return "X"  # black
 
-        # TODO: handle case of breakout itself not having bounds
-        # if self.breakout.temporal_bounds():
-        #   return "N" # grey
+        if self.breakout.temporal_bounds is None:
+            return "N"  # grey
 
         if self.time_range == ALL:
             return "G"
