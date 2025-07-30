@@ -1,8 +1,10 @@
 from functools import cached_property
+from logging import getLogger
+from typing import Literal
 
 import xarray as xr
 
-from r2r_ctd.breakout import BBox, DTRange
+from r2r_ctd.breakout import BBox, Breakout, DTRange
 from r2r_ctd.checks import (
     check_dt,
     check_lat_lon,
@@ -17,7 +19,15 @@ from r2r_ctd.derived import (
     make_cnvs,
     make_con_report,
 )
-from r2r_ctd.state import get_or_write_check, get_or_write_derived_file
+from r2r_ctd.state import (
+    get_config_path,
+    get_filename,
+    get_or_write_check,
+    get_or_write_derived_file,
+    get_product_path,
+)
+
+logger = getLogger(__name__)
 
 
 @xr.register_dataset_accessor("r2r")
@@ -119,3 +129,23 @@ class R2RAccessor:
                     continue
 
         return False
+
+    def write_con_report(self, breakout: "Breakout"):
+        if self.con_report is None:
+            return None
+
+        fname = get_filename(self._obj.con_report)
+        con_path = get_config_path(breakout) / fname
+        con_path.write_text(self.con_report)
+        logger.info(f"Conreport written to {con_path}")
+
+    def write_cnv(self, breakout: "Breakout", cnv: Literal["cnv_24hz", "cnv_1db"]):
+        cnv_contents = getattr(self, cnv)
+        if cnv_contents is None:
+            return None
+
+        da = getattr(self._obj, cnv)
+        fname = get_filename(da)
+        write_path = get_product_path(breakout) / fname
+        write_path.write_text(cnv_contents)
+        logger.info(f"{cnv} written to {write_path}")

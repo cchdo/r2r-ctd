@@ -1,7 +1,7 @@
 from collections.abc import Callable
 from logging import getLogger
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Protocol
+from typing import TYPE_CHECKING, Any, Protocol, cast
 
 import numpy as np
 import xarray as xr
@@ -82,6 +82,10 @@ def get_product_path(breakout: "Breakout") -> Path:
     product_dir.mkdir(exist_ok=True, parents=True)
 
     return product_dir
+
+
+def get_filename(da: xr.DataArray) -> str:
+    return cast("str", da.attrs["filename"])
 
 
 def initialize_or_get_state(breakout: "Breakout", hex_path: Path) -> xr.Dataset:

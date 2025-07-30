@@ -1,6 +1,5 @@
 import logging
 from pathlib import Path
-from typing import cast
 
 import click
 from rich.logging import RichHandler
@@ -8,9 +7,7 @@ from rich.logging import RichHandler
 from r2r_ctd.breakout import Breakout
 from r2r_ctd.reporting import ResultAggregator, get_new_references, get_update_record
 from r2r_ctd.state import (
-    get_config_path,
     get_geoCSV_path,
-    get_product_path,
     get_xml_qa_path,
 )
 
@@ -48,27 +45,15 @@ def qa(gen_cnvs: bool, paths: tuple[Path, ...]):
         # write geoCSV
         get_geoCSV_path(breakout).write_text(ra.gen_geoCSV())
 
+        # write the SBE Configuration Reports
         for station in breakout:
-            if con_report := station.r2r.con_report:
-                con_path = get_config_path(breakout) / cast(
-                    "str",
-                    station.con_report.attrs["filename"],
-                )
-                con_path.write_text(con_report)
+            station.r2r.write_con_report(breakout)
 
-        for station in breakout:
-            if gen_cnvs and station.r2r.cnv_24hz:
-                cnv24_path = get_product_path(breakout) / cast(
-                    "str",
-                    station.cnv_24hz.attrs["filename"],
-                )
-                cnv24_path.write_text(station.cnv_24hz.item())
-            if gen_cnvs and station.r2r.cnv_1db:
-                cnv1db_path = get_product_path(breakout) / cast(
-                    "str",
-                    station.cnv_1db.attrs["filename"],
-                )
-                cnv1db_path.write_text(station.cnv_1db.item())
+        # write the cnv files
+        if gen_cnvs:
+            for station in breakout:
+                station.r2r.write_cnv(breakout, "cnv_24hz")
+                station.r2r.write_cnv(breakout, "cnv_1db")
 
         root = qa_xml.getroot()
         cert = root.xpath(
