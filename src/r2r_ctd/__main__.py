@@ -73,14 +73,17 @@ def qa(gen_cnvs: bool, paths: tuple[Path, ...]):
                 cnv1db_path.write_text(station.cnv_1db.item())
 
         root = qa_xml.getroot()
-        nsmap = root.nsmap
-        cert = root.xpath("/r2r:qareport/r2r:certificate", namespaces=nsmap)[0]
+        cert = root.xpath(
+            "/r2r:qareport/r2r:certificate", namespaces=breakout.namespaces
+        )[0]
         updates = root.xpath(
             "/r2r:qareport/r2r:provenance/r2r:updates",
-            namespaces=nsmap,
+            namespaces=breakout.namespaces,
         )[0]
         updates.append(get_update_record())
-        references = root.xpath("/r2r:qareport/r2r:references", namespaces=nsmap)[0]
+        references = root.xpath(
+            "/r2r:qareport/r2r:references", namespaces=breakout.namespaces
+        )[0]
 
         new_refs = get_new_references(breakout)
         references.extend(new_refs)

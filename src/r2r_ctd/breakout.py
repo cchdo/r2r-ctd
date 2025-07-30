@@ -131,28 +131,32 @@ class Breakout:
             etree.XMLParser(remove_blank_text=True),
         )
 
+    @cached_property
+    def namespaces(self) -> dict[str, str]:
+        root = self.qa_template_xml.getroot()
+        return {k: v for k, v in root.nsmap.items() if k is not None}
+
     @property
     def cruise_id(self):
-        root = self.qa_template_xml.getroot()
-        nsmap = root.nsmap
-        return self.qa_template_xml.find(".//r2r:cruise_id", namespaces=nsmap).text
+        return self.qa_template_xml.find(
+            ".//r2r:cruise_id", namespaces=self.namespaces
+        ).text
 
     @property
     def fileset_id(self):
-        root = self.qa_template_xml.getroot()
-        nsmap = root.nsmap
-        return self.qa_template_xml.find(".//r2r:fileset_id", namespaces=nsmap).text
+        return self.qa_template_xml.find(
+            ".//r2r:fileset_id", namespaces=self.namespaces
+        ).text
 
     @cached_property
     def bbox(self) -> BBox | None:
         """The bbox of the cruise in geojson bbox format/order"""
         root = self.qa_template_xml.getroot()
-        nsmap = root.nsmap
         prefix = "/r2r:qareport/r2r:filesetinfo/r2r:cruise/r2r:extent"
-        w = root.xpath(f"{prefix}/r2r:westernmost/text()", namespaces=nsmap)
-        s = root.xpath(f"{prefix}/r2r:southernmost/text()", namespaces=nsmap)
-        e = root.xpath(f"{prefix}/r2r:easternmost/text()", namespaces=nsmap)
-        n = root.xpath(f"{prefix}/r2r:northernmost/text()", namespaces=nsmap)
+        w = root.xpath(f"{prefix}/r2r:westernmost/text()", namespaces=self.namespaces)
+        s = root.xpath(f"{prefix}/r2r:southernmost/text()", namespaces=self.namespaces)
+        e = root.xpath(f"{prefix}/r2r:easternmost/text()", namespaces=self.namespaces)
+        n = root.xpath(f"{prefix}/r2r:northernmost/text()", namespaces=self.namespaces)
         result = []
         for elm in (w, s, e, n):
             if len(elm) != 1:
@@ -171,10 +175,13 @@ class Breakout:
     @cached_property
     def temporal_bounds(self) -> DTRange | None:
         root = self.qa_template_xml.getroot()
-        nsmap = root.nsmap
         prefix = "/r2r:qareport/r2r:filesetinfo/r2r:cruise"
-        start = root.xpath(f"{prefix}/r2r:depart_date/text()", namespaces=nsmap)
-        stop = root.xpath(f"{prefix}/r2r:arrive_date/text()", namespaces=nsmap)
+        start = root.xpath(
+            f"{prefix}/r2r:depart_date/text()", namespaces=self.namespaces
+        )
+        stop = root.xpath(
+            f"{prefix}/r2r:arrive_date/text()", namespaces=self.namespaces
+        )
 
         result = []
         for elm in (start, stop):
