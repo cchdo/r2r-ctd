@@ -37,13 +37,13 @@ def container_ready(container, timeout=5):
 class ContainerGetter:
     container: Container | None = None
 
-    def __call__(cls) -> Container:
-        if cls.container is not None:
-            return cls.container
+    def __call__(self) -> Container:
+        if self.container is not None:
+            return self.container
         logger.info("Launching container for running SBE software")
         client = docker.from_env()
         labels = ["us.rvdata.ctd-proc"]
-        cls.container = client.containers.run(
+        self.container = client.containers.run(
             SBEDP_IMAGE,
             auto_remove=True,
             detach=True,
@@ -55,18 +55,20 @@ class ContainerGetter:
             # something it knows about
             ports=cast("Mapping[str, None]", {"3000/tcp": ("127.0.0.1",)}),
         )
-        logger.info(f"Container launched as {cls.container.name} with labels: {labels}")
+        logger.info(
+            f"Container launched as {self.container.name} with labels: {labels}"
+        )
 
         def _kill_container():
-            if cls.container is None:
+            if self.container is None:
                 return
-            logger.info(f"attempting to kill wine container: {cls.container.name}")
-            cls.container.kill()
+            logger.info(f"attempting to kill wine container: {self.container.name}")
+            self.container.kill()
 
         atexit.register(_kill_container)
 
-        if container_ready(cls.container):
-            return cls.container
+        if container_ready(self.container):
+            return self.container
         else:
             raise Exception("Could not start container after 5 seconds")
 

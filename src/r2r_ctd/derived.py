@@ -15,7 +15,7 @@ from r2r_ctd.sbe import (
     derive_template,
     sensors_con_to_psa,
 )
-from r2r_ctd.state import NamedFile, get_or_write_derived_file
+from r2r_ctd.state import NamedFile
 
 logger = getLogger(__name__)
 
@@ -213,8 +213,13 @@ def make_derive_psa(con_report: str) -> bytes:
             index="1",
             CalcID="15",
         )
-        template.find(".//CalcArray").append(second_density)
-        template.find(".//CalcArray").attrib["Size"] = "2"
+        if calc_array := template.find(".//CalcArray"):
+            calc_array.append(second_density)
+            calc_array.attrib["Size"] = "2"
+        else:
+            raise RuntimeError(
+                "Could not find CalcArray in built in derive psa file, this indicates a broken installation"
+            )
 
     return etree.tostring(
         template,
@@ -241,7 +246,7 @@ def make_datcnv_psa(con_report: str) -> bytes:
     allsensors = datcnv_allsensors()
     template = datcnv_template()
 
-    calc_array = []
+    calc_array_items = []
     for sensor in _con_report_extract_sensors(con_report):
         if sensor == "Free":
             continue
@@ -251,17 +256,22 @@ def make_datcnv_psa(con_report: str) -> bytes:
 
         psa_sensors = sensors_con_to_psa[sensor]
         for psa_sensor in psa_sensors:
-            calc_array.extend(
+            calc_array_items.extend(
                 allsensors.xpath(
                     "//CalcArrayItem[./Calc/FullName[@value=$psa_sensor]]",
                     psa_sensor=psa_sensor,
                 ),
             )
-    for index, item in enumerate(calc_array):
+    for index, item in enumerate(calc_array_items):
         item.attrib["index"] = str(index)
 
-    template.find(".//CalcArray").extend(calc_array)
-    template.find(".//CalcArray").attrib["Size"] = str(len(calc_array))
+    if (calc_array := template.find(".//CalcArray")) is not None:
+        calc_array.extend(calc_array_items)
+        calc_array.attrib["Size"] = str(len(calc_array))
+    else:
+        raise RuntimeError(
+            "Could not find CalcArray in built in derive psa file, this indicates a broken installation"
+        )
 
     return etree.tostring(
         template,
@@ -273,7 +283,7 @@ def make_datcnv_psa(con_report: str) -> bytes:
 
 
 def make_cnvs(ds: xr.Dataset) -> dict[str, xr.Dataset]:
-    con_report = get_or_write_derived_file(ds, "con_report", make_con_report).item()
+    con_report = ds.r2r.con_report
 
     datcnv = NamedFile(make_datcnv_psa(con_report), name="datcnv.psa")
     derive = NamedFile(make_derive_psa(con_report), name="derive.psa")

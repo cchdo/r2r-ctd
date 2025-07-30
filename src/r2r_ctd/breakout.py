@@ -138,15 +138,23 @@ class Breakout:
 
     @property
     def cruise_id(self):
-        return self.qa_template_xml.find(
-            ".//r2r:cruise_id", namespaces=self.namespaces
-        ).text
+        if (
+            cruise_id := self.qa_template_xml.find(
+                ".//r2r:cruise_id", namespaces=self.namespaces
+            )
+        ) is not None:
+            return cruise_id.text
+        return None
 
     @property
     def fileset_id(self):
-        return self.qa_template_xml.find(
-            ".//r2r:fileset_id", namespaces=self.namespaces
-        ).text
+        if (
+            fileset_id := self.qa_template_xml.find(
+                ".//r2r:fileset_id", namespaces=self.namespaces
+            )
+        ) is not None:
+            return fileset_id.text
+        return None
 
     @cached_property
     def bbox(self) -> BBox | None:
