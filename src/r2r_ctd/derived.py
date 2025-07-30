@@ -7,7 +7,7 @@ from lxml.builder import ElementMaker
 from odf.sbe import accessors  # noqa: F401
 from odf.sbe.parsers import parse_hdr
 
-from r2r_ctd.docker_ctl import run_conreport, run_sbebatch
+from r2r_ctd.docker_ctl import run_con_report, run_sbebatch
 from r2r_ctd.sbe import (
     binavg_template,
     datcnv_allsensors,
@@ -120,29 +120,29 @@ def get_time(ds: xr.Dataset) -> datetime | None:
     return None
 
 
-def make_conreport(ds: xr.Dataset):
+def make_con_report(ds: xr.Dataset):
     xmlcon = NamedFile(ds.sbe.to_xmlcon(), name=ds.xmlcon.attrs["filename"])
-    return run_conreport(xmlcon)
+    return run_con_report(xmlcon)
 
 
-def get_model(conreport: str) -> str | None:
-    if "Configuration report for SBE 25" in conreport:
+def get_model(con_report: str) -> str | None:
+    if "Configuration report for SBE 25" in con_report:
         return "SBE25"
-    if "Configuration report for SBE 49" in conreport:
+    if "Configuration report for SBE 49" in con_report:
         return "SBE49"
-    if "Configuration report for SBE 911plus" in conreport:
+    if "Configuration report for SBE 911plus" in con_report:
         return "SBE911"
-    if "Configuration report for SBE 19plus" in conreport:
+    if "Configuration report for SBE 19plus" in con_report:
         return "SBE19"
 
     return None
 
 
-def _conreport_extract_sensors(conreport: str) -> list[str]:
+def _con_report_extract_sensors(con_report: str) -> list[str]:
     sensors = []
-    model = get_model(conreport)
+    model = get_model(con_report)
 
-    for line in conreport.splitlines():
+    for line in con_report.splitlines():
         # there are 3 "virtual" sensors that get added if certain flags are set (position and time)
         no_whitespace_line = line.replace(" ", "").lower()
         if no_whitespace_line == "nmeapositiondataadded:yes":
@@ -165,10 +165,10 @@ def _conreport_extract_sensors(conreport: str) -> list[str]:
     return sensors
 
 
-def get_conreport_sn(conreport: str, instrument: str) -> set[str]:
+def get_con_report_sn(con_report: str, instrument: str) -> set[str]:
     title = ""
     sns = []
-    for line in conreport.splitlines():
+    for line in con_report.splitlines():
         try:
             section, title = line.split(")", maxsplit=1)
             int(section)
@@ -196,9 +196,9 @@ def get_hdr_sn(hdr: str, instrument: str) -> str | None:
     return header.get(f"{instrument} SN")
 
 
-def make_derive_psa(conreport: str) -> bytes:
+def make_derive_psa(con_report: str) -> bytes:
     template = derive_template()
-    sensors = _conreport_extract_sensors(conreport)
+    sensors = _con_report_extract_sensors(con_report)
     is_dual_channel = {"Temperature, 2", "Conductivity, 2"} <= set(sensors)
     logger.info(f"Cast is dual channel: {is_dual_channel}")
 
@@ -225,7 +225,7 @@ def make_derive_psa(conreport: str) -> bytes:
     )
 
 
-def make_binavg_psa(conreport: str) -> bytes:
+def make_binavg_psa(con_report: str) -> bytes:
     """This is a noop, but included for a consistent API"""
     template = binavg_template()
     return etree.tostring(
@@ -237,12 +237,12 @@ def make_binavg_psa(conreport: str) -> bytes:
     )
 
 
-def make_datcnv_psa(conreport: str) -> bytes:
+def make_datcnv_psa(con_report: str) -> bytes:
     allsensors = datcnv_allsensors()
     template = datcnv_template()
 
     calc_array = []
-    for sensor in _conreport_extract_sensors(conreport):
+    for sensor in _con_report_extract_sensors(con_report):
         if sensor == "Free":
             continue
         if sensor not in sensors_con_to_psa:
@@ -273,11 +273,11 @@ def make_datcnv_psa(conreport: str) -> bytes:
 
 
 def make_cnvs(ds: xr.Dataset) -> dict[str, xr.Dataset]:
-    conreport = get_or_write_derived_file(ds, "conreport", make_conreport).item()
+    con_report = get_or_write_derived_file(ds, "con_report", make_con_report).item()
 
-    datcnv = NamedFile(make_datcnv_psa(conreport), name="datcnv.psa")
-    derive = NamedFile(make_derive_psa(conreport), name="derive.psa")
-    binavg = NamedFile(make_binavg_psa(conreport), name="binavg.psa")
+    datcnv = NamedFile(make_datcnv_psa(con_report), name="datcnv.psa")
+    derive = NamedFile(make_derive_psa(con_report), name="derive.psa")
+    binavg = NamedFile(make_binavg_psa(con_report), name="binavg.psa")
 
     xmlcon = NamedFile(ds.sbe.to_xmlcon(), name=ds.xmlcon.attrs["filename"])
     hex = NamedFile(ds.sbe.to_hex(), name=ds.hex.attrs["filename"])

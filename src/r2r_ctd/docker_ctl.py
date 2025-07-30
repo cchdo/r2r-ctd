@@ -73,7 +73,7 @@ class ContainerGetter:
 
 get_container = ContainerGetter()
 
-conreport_sh = r"""export DISPLAY=:1
+con_report_sh = r"""export DISPLAY=:1
 export HODLL=libwow64fex.dll
 export WINEPREFIX=/.wine
 
@@ -86,7 +86,7 @@ exit 0;
 """
 
 
-def run_conreport(xmlcon: NamedFile):
+def run_con_report(xmlcon: NamedFile):
     container = get_container()
 
     logger.info(f"Running in container {container.name}")
@@ -94,11 +94,11 @@ def run_conreport(xmlcon: NamedFile):
 
     with TemporaryDirectory(dir=_tmpdir.name) as condir:
         work_dir = Path(condir)
-        sh = work_dir / "sh" / "conreport.sh"
+        sh = work_dir / "sh" / "con_report.sh"
         if sh.exists():
             sh.unlink()
         sh.parent.mkdir(exist_ok=True, parents=True)
-        sh.write_text(conreport_sh)
+        sh.write_text(con_report_sh)
         sh.chmod(0o555)
 
         indir = work_dir / "in"
@@ -110,13 +110,13 @@ def run_conreport(xmlcon: NamedFile):
         outdir = work_dir / "out"
         outdir.mkdir(exist_ok=True, parents=True)
 
-        conreport_logs = container.exec_run(
-            f'su -c "/.wine/drive_c/proc/{work_dir.name}/sh/conreport.sh" abc',
+        con_report_logs = container.exec_run(
+            f'su -c "/.wine/drive_c/proc/{work_dir.name}/sh/con_report.sh" abc',
             demux=True,
             stream=True,
             environment={"TMPDIR_R2R": work_dir.name},
         )
-        for stdout, stderr in conreport_logs.output:
+        for stdout, stderr in con_report_logs.output:
             if stdout is not None:
                 logger.info(f"{container.name} - {stdout.decode().strip()}")
             if stderr is not None:
@@ -129,9 +129,9 @@ def run_conreport(xmlcon: NamedFile):
 
         out_path = outdir / infile.with_suffix(".txt").name
 
-        conreport = string_loader(out_path, "conreport").conreport
+        con_report = string_loader(out_path, "con_report").con_report
 
-        return conreport
+        return con_report
 
 
 sbebatch_sh = r"""export DISPLAY=:1

@@ -15,7 +15,7 @@ from r2r_ctd.derived import (
     get_longitude,
     get_time,
     make_cnvs,
-    make_conreport,
+    make_con_report,
 )
 from r2r_ctd.state import get_or_write_check, get_or_write_derived_file
 
@@ -56,16 +56,16 @@ class R2RAccessor:
         return get_or_write_check(self._obj, "lat_lon_range", check_lat_lon, bbox=bbox)
 
     @cached_property
-    def conreport(self) -> str | None:
-        conreport = get_or_write_derived_file(self._obj, "conreport", make_conreport)
-        if conreport:
-            return conreport.item()
+    def con_report(self) -> str | None:
+        con_report = get_or_write_derived_file(self._obj, "con_report", make_con_report)
+        if con_report:
+            return con_report.item()
 
         return None
 
     @cached_property
     def cnv_24hz(self) -> str | None:
-        if self.conreport is None:
+        if self.con_report is None:
             return None
 
         cnv_24hz = get_or_write_derived_file(self._obj, "cnv_24hz", make_cnvs)
@@ -76,7 +76,7 @@ class R2RAccessor:
 
     @cached_property
     def cnv_1db(self) -> str | None:
-        if self.conreport is None:
+        if self.con_report is None:
             return None
 
         cnv_1db = get_or_write_derived_file(self._obj, "cnv_1db", make_cnvs)

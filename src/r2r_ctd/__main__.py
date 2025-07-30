@@ -49,14 +49,12 @@ def qa(gen_cnvs: bool, paths: tuple[Path, ...]):
         get_geoCSV_path(breakout).write_text(ra.gen_geoCSV())
 
         for station in breakout:
-            if "conreport" not in station:
-                continue
-
-            con_path = get_config_path(breakout) / cast(
-                "str",
-                station.conreport.attrs["filename"],
-            )
-            con_path.write_text(station.conreport.item())
+            if con_report := station.r2r.con_report:
+                con_path = get_config_path(breakout) / cast(
+                    "str",
+                    station.con_report.attrs["filename"],
+                )
+                con_path.write_text(con_report)
 
         for station in breakout:
             if gen_cnvs and station.r2r.cnv_24hz:

@@ -25,7 +25,7 @@ class BBox(NamedTuple):
             return False
         if lat > self.n:
             return False
-        if self.w > self.e:  # case of crossing the antimeridian
+        if self.w > self.e:  # case of crossing the "date line"
             if self.e < lon < self.w:
                 return False
         else:

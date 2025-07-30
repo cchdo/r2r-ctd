@@ -11,7 +11,7 @@ from lxml.etree import _Element
 import r2r_ctd.accessors  # noqa: F401
 from r2r_ctd.breakout import Breakout
 from r2r_ctd.derived import (
-    get_conreport_sn,
+    get_con_report_sn,
     get_hdr_sn,
     get_latitude,
     get_longitude,
@@ -233,11 +233,11 @@ class ResultAggregator:
     def info_model_number(self):
         model = ""
         for data in self.breakout:
-            conreport = data.r2r.conreport
+            con_report = data.r2r.con_report
 
-            if conreport is None:
+            if con_report is None:
                 continue
-            model = get_model(conreport) or ""
+            model = get_model(con_report) or ""
 
         return Info(model, name="Model Number of CTD Instrument", uom="Unitless")
 
@@ -280,7 +280,7 @@ class ResultAggregator:
         problem_casts = []
         for station in self.breakout.stations_hex_paths:
             data = self.breakout[station]
-            if data.r2r.conreport is None:
+            if data.r2r.con_report is None:
                 problem_casts.append(station.stem)
 
         return Info(
@@ -302,10 +302,10 @@ class ResultAggregator:
         problem_casts = []
         for station in self.breakout.stations_hex_paths:
             data = self.breakout[station]
-            conreport = data.r2r.conreport
-            if conreport is None:
+            con_report = data.r2r.con_report
+            if con_report is None:
                 continue
-            models = get_conreport_sn(conreport, "Temperature")
+            models = get_con_report_sn(con_report, "Temperature")
             sn = get_hdr_sn(data.hdr.item(), "Temperature")
             if sn not in models:
                 problem_casts.append(station.stem)
@@ -320,10 +320,10 @@ class ResultAggregator:
         problem_casts = []
         for station in self.breakout.stations_hex_paths:
             data = self.breakout[station]
-            conreport = data.r2r.conreport
-            if conreport is None:
+            con_report = data.r2r.con_report
+            if con_report is None:
                 continue
-            models = get_conreport_sn(conreport, "Conductivity")
+            models = get_con_report_sn(con_report, "Conductivity")
             sn = get_hdr_sn(data.hdr.item(), "Conductivity")
             if sn not in models:
                 problem_casts.append(station.stem)
@@ -394,8 +394,8 @@ class ResultAggregator:
                 epoch = f"{time.timestamp():.0f}"
 
             model = ""
-            if conreport := data.r2r.conreport:
-                model = get_model(conreport) or ""
+            if con_report := data.r2r.con_report:
+                model = get_model(con_report) or ""
 
             data_lines.append(
                 ",".join(
