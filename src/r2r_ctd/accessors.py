@@ -4,7 +4,7 @@ from typing import Literal
 
 import xarray as xr
 
-from r2r_ctd.breakout import BBox, Breakout, DTRange
+from r2r_ctd.breakout import BBox, Breakout, Interval
 from r2r_ctd.checks import (
     check_dt,
     check_lat_lon,
@@ -59,7 +59,7 @@ class R2RAccessor:
     def all_three_files(self):
         return get_or_write_check(self._obj, "three_files", check_three_files)
 
-    def time_in(self, dt_range: DTRange) -> bool:
+    def time_in(self, dt_range: Interval) -> bool:
         return get_or_write_check(self._obj, "date_range", check_dt, dtrange=dt_range)
 
     def lon_lat_in(self, bbox: BBox) -> bool:

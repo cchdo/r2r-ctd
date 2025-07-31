@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING
 import xarray as xr
 
 if TYPE_CHECKING:
-    from r2r_ctd.breakout import BBox, DTRange
+    from r2r_ctd.breakout import BBox, Interval
 
 logger = getLogger(__name__)
 
@@ -85,7 +85,7 @@ def check_lat_lon(ds: xr.Dataset, bbox: "BBox | None") -> bool:
     return bbox.contains(lon, lat)
 
 
-def check_dt(ds: xr.Dataset, dtrange: "DTRange | None") -> bool:
+def check_dt(ds: xr.Dataset, dtrange: "Interval | None") -> bool:
     if "hdr" not in ds:
         return False
 
