@@ -413,15 +413,15 @@ wheels = [
 
 [[package]]
 name = "odf-sbe"
-version = "0.1.0"
+version = "0.2.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "netcdf4" },
     { name = "xarray" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/3a/4b/0f55c214d9e1288cb97e62b9770bc55879a5af4703af37c19a2358656ffa/odf_sbe-0.1.0.tar.gz", hash = "sha256:ef6b96297bbc5698571ab816e277da2515121070aaf201c480212528f4303327", size = 72952, upload-time = "2025-03-03T22:06:55.255Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/ed/78/bbe83c9de1d6209e87ec34811755c4c2f9f90714f82552c8eff37b7584db/odf_sbe-0.2.1.tar.gz", hash = "sha256:ab5e1300f1a4ecd3cc5cc68cdd6820a54224c0d109a09fb4387c0390203f49aa", size = 88654, upload-time = "2025-07-31T22:37:27.787Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/a9/c6/ed18044552a71842a3a188abc40f44965bc9357fcc6b6f6b9f82e73d573e/odf_sbe-0.1.0-py3-none-any.whl", hash = "sha256:7fffa7000d276f57fa49f51589766d14d6209ecaeb7737462832757e7e382be8", size = 12683, upload-time = "2025-03-03T22:06:53.873Z" },
+    { url = "https://files.pythonhosted.org/packages/16/7c/8fa2eb1e2ca1c4f22554be9cf183c9474b2510068e01082bd9feeb5ec2c0/odf_sbe-0.2.1-py3-none-any.whl", hash = "sha256:83b70d6a160437bb4cac0ea1ee14e47d47dbc7c3fb3ca8cb1db03ab437012edb", size = 15497, upload-time = "2025-07-31T22:37:26.823Z" },
 ]
 
 [[package]]
@@ -580,7 +580,7 @@ requires-dist = [
     { name = "click", specifier = ">=8.2.0" },
     { name = "docker", specifier = ">=7.1.0" },
     { name = "lxml", specifier = ">=5.4.0" },
-    { name = "odf-sbe", specifier = ">=0.1.0" },
+    { name = "odf-sbe", specifier = ">=0.2.1" },
     { name = "rich", specifier = ">=14.0.0" },
 ]
 
