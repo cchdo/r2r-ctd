@@ -58,8 +58,11 @@ def _parse_coord(coord: str) -> float | None:
 def get_longitude(ds: xr.Dataset) -> float | None:
     """Get the cast longitude from NMEA header
 
-    The original code from WHOI tries to also get this from the ** Longitude line
-    but the ** means it is a comment and can be _anything_ the user puts in.
+    .. admonition:: WHOI Divergence
+        :class: warning
+
+        The original code from WHOI tries to also get this from the ``** Longitude`` line
+        but I think the ``**`` means it is a comment and can be *anything* the user puts in.
     """
     headers = parse_hdr(ds.hdr.item())
     if (value := headers.get("NMEA Longitude")) is not None:
@@ -71,7 +74,11 @@ def get_longitude(ds: xr.Dataset) -> float | None:
 def get_latitude(ds: xr.Dataset) -> float | None:
     """Get the cast latitude from NMEA header
 
-    See the docstring for get_longitude for comment on original code
+    .. admonition:: WHOI Divergence
+        :class: warning
+
+        The original code from WHOI tries to also get this from the ``** Latitude`` line
+        but I think the ``**`` means it is a comment and can be *anything* the user puts in.
     """
     headers = parse_hdr(ds.hdr.item())
     if (value := headers.get("NMEA Latitude")) is not None:

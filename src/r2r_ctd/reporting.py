@@ -222,6 +222,22 @@ class ResultAggregator:
 
     @cached_property
     def info_number_bottles(self):
+        """Get the number of casts that have bottles fired
+
+        .. admonition:: WHOI Divergence
+            :class: warning
+
+            The original WHOI code simply checks if there is a .bl file and says the cast has bottles fired
+            if this file is present.
+
+            This is incorrect, you need to check to see if there are any actual bottle fire records in that file.
+            This code does that check.
+
+            In the example breakout 138036 there are three casts but only one fired bottles, the QA report in that breakout
+            incorrectly says 0 casts with bottles fired.
+            My understanding is the current WHOI code would report 3 for this breakout, I don't know why is says 0
+            but both are incorrect.
+        """
         result = [data.r2r.bottles_fired for data in self.breakout]
 
         return Info(
@@ -270,14 +286,33 @@ class ResultAggregator:
 
     @cached_property
     def info_casts_with_hex_bad_format(self):
-        # The WHOI code runs `file -b` and checks to see if the result has one of:
-        # "data", "objects", or "executable" in the type
-        # I think we need an example of some bad files for this
-        # For now, always returning OK
+        """Always reports OK
+
+        .. admonition:: WHOI Divergence
+            :class: warning
+
+            In the original WHOI code, this works the same way as :py:meth:`.info_casts_with_xmlcon_bad_format`.
+
+            I would like to implement this in the same way that the bad xmlcon report does, but need to actually make or find some bad data.
+        """
         return Info("", name="Casts with Hex file in Bad Format", uom="List")
 
     @cached_property
     def info_casts_with_xmlcon_bad_format(self):
+        """Report the casts which could not have a conreport generated
+
+        .. admonition:: WHOI Divergence
+            :class: warning
+
+            The original code would run the ``file`` command and check to make sure any of
+            "data", "object", or "executable" were not in the output of the command.
+            Instead, this will just check to see which casts the ConReport.exe failed on,
+            i.e. let seabird software figure out if the xmlcon is a bad format.
+
+            The original documentation also says it is looking for ASCII, but the code does not appear
+            to do any encoding checks, they would likely be invalid anyway since Seabird files, being on windows,
+            are usually `CP437 <https://en.wikipedia.org/wiki/Code_page_437>`_.
+        """
         problem_casts = []
         for station in self.breakout.stations_hex_paths:
             data = self.breakout[station]
@@ -300,6 +335,23 @@ class ResultAggregator:
 
     @cached_property
     def info_casts_with_temp_sensor_sn_problems(self):
+        """List of casts where the serial number in the data header does not
+        match any serial numbers in the xmlcon.
+
+        .. admonition:: WHOI Divergence
+            :class: warning
+
+            There can be more than one temperature sensor and they will have different serial numbers.
+            The datafile would only have one serial number, but the xmlcon will list all the sensors.
+            The original WHOI code would only check one of the serial numbers found in the xmlcon.
+
+            I'm not sure the exact cause, but there are a lot of false problems in the breakouts I was given
+            to test with, for example: 156405 reports that all the casts have SN problems, but a manual examination
+            and this code, show that there are no mismatches.
+
+            This code checks the serial number in the header file against all the serial numbers in the xmlcon of the
+            same instrument type (e.g. all temperature sensor serial numbers)
+        """
         problem_casts = []
         for station in self.breakout.stations_hex_paths:
             data = self.breakout[station]
@@ -318,6 +370,14 @@ class ResultAggregator:
 
     @cached_property
     def info_casts_with_cond_sensor_sn_problems(self):
+        """List of casts where the serial number in the data header does not
+        match any serial numbers in the xmlcon.
+
+        .. admonition:: WHOI Divergence
+            :class: warning
+
+            See the info_casts_with_temp_sensor_sn_problems divergence note
+        """
         problem_casts = []
         for station in self.breakout.stations_hex_paths:
             data = self.breakout[station]
@@ -362,6 +422,15 @@ class ResultAggregator:
         )
 
     def gen_geoCSV(self):
+        """Generates the "geoCSV" file
+
+        The header was taken verbatim from the WHOI Code, and could probably use some cleanup.
+        Of particular note is that the field types, units, etc.. metadata in the header, does not
+        match the number of columns in the actual "data" part.
+
+        The original WHOI code also doesn't calculate the dp_flag and just sets to a hard coded 0.
+        Better might be to use a bit mask because there can be multiple problems with each cast.
+        """
         header = textwrap.dedent(f"""\
         #dataset: GeoCSV 2.0
         #field_unit: (unitless),(unitless),ISO_8601,second,degrees_east,degrees_north
