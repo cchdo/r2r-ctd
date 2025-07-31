@@ -13,7 +13,7 @@ logger = getLogger(__name__)
 def is_deck_test(path: Path) -> bool:
     """Check if the given path "looks like" a deck test
 
-    This method matches the pathname against a list of strings that are common to desk tests
+    This method matches the pathname against a list of strings that are common to desk tests.
     """
     logger.debug(f"Checking if {path} is a decktest")
     # this should match the behavior of WHOI tests, but felt fragile to me
@@ -51,7 +51,7 @@ def check_three_files(ds: xr.Dataset) -> bool:
     return True
 
 
-def check_lat_lon_valid(ds: xr.Dataset) -> bool:
+def check_lon_lat_valid(ds: xr.Dataset) -> bool:
     """Checks if a valid lat/lon can even be extracted from the hex/header"""
     if "hdr" not in ds:
         return False
@@ -70,7 +70,8 @@ def check_time_valid(ds: xr.Dataset) -> bool:
     return ds.r2r.time is not None
 
 
-def check_lat_lon(ds: xr.Dataset, bbox: "BBox | None") -> bool:
+def check_lon_lat(ds: xr.Dataset, bbox: "BBox | None") -> bool:
+    """Checks that the lon lat of the cast are within the cruise bounding box"""
     if "hdr" not in ds:
         return False
     if bbox is None:
@@ -86,6 +87,7 @@ def check_lat_lon(ds: xr.Dataset, bbox: "BBox | None") -> bool:
 
 
 def check_dt(ds: xr.Dataset, dtrange: "Interval | None") -> bool:
+    """Checks that the time of the cast are within the cruise interval"""
     if "hdr" not in ds:
         return False
 

@@ -89,7 +89,7 @@ def valid_checksum(rating: Literal["G", "R"]) -> _Element:
     )
 
 
-def lat_lon_range(
+def lon_lat_range(
     rating: Literal["G", "R", "Y", "N", "X"],
     test_result: str | int,
 ) -> _Element:
@@ -137,29 +137,29 @@ class ResultAggregator:
         return "R"
 
     @cached_property
-    def lat_lon_nav_valid(self) -> int:
-        results = [data.r2r.lat_lon_valid for data in self.breakout]
+    def lon_lat_nav_valid(self) -> int:
+        results = [data.r2r.lon_lat_valid for data in self.breakout]
         return int((results.count(True) / len(results)) * 100)
 
     @cached_property
-    def lat_lon_nav_range(self) -> int:
+    def lon_lat_nav_range(self) -> int:
         results = [data.r2r.lon_lat_in(self.breakout.bbox) for data in self.breakout]
         return int((results.count(True) / len(results)) * 100)
 
     @property
-    def lat_lon_nav_ranges_rating(self) -> Literal["G", "Y", "R", "N", "X"]:
-        if self.lat_lon_nav_valid == 0:  # no readable positions to test
+    def lon_lat_nav_ranges_rating(self) -> Literal["G", "Y", "R", "N", "X"]:
+        if self.lon_lat_nav_valid == 0:  # no readable positions to test
             return "X"  # black
 
         if self.breakout.bbox is None:
             return "N"  # grey
 
-        if self.lat_lon_nav_range == ALL:
+        if self.lon_lat_nav_range == ALL:
             return "G"
 
         # in the WHOI code, it looks like up to 50% of the casts can have bad lat/lon
         # which I guess is a "few"
-        if self.lat_lon_nav_range >= A_FEW:
+        if self.lon_lat_nav_range >= A_FEW:
             return "Y"
 
         return "R"
@@ -199,7 +199,7 @@ class ResultAggregator:
         ratings = {
             self.presence_of_all_files_rating,
             self.valid_checksum_rating,
-            self.lat_lon_nav_ranges_rating,
+            self.lon_lat_nav_ranges_rating,
             self.time_rating,
         }
         if "R" in ratings:
@@ -339,7 +339,7 @@ class ResultAggregator:
         problem_casts = [
             data[R2R_QC_VARNAME].attrs["station_name"]
             for data in self.breakout
-            if data.r2r.lat_lon_valid
+            if data.r2r.lon_lat_valid
         ]
 
         return Info(
@@ -415,7 +415,7 @@ class ResultAggregator:
                     self.presence_of_all_files,
                 ),
                 valid_checksum(self.valid_checksum_rating),
-                lat_lon_range(self.lat_lon_nav_ranges_rating, self.lat_lon_nav_range),
+                lon_lat_range(self.lon_lat_nav_ranges_rating, self.lon_lat_nav_range),
                 date_range(self.time_rating, self.time_range),
             ),
             Infos(

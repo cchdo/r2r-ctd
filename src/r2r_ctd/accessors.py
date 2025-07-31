@@ -7,8 +7,8 @@ import xarray as xr
 from r2r_ctd.breakout import BBox, Breakout, Interval
 from r2r_ctd.checks import (
     check_dt,
-    check_lat_lon,
-    check_lat_lon_valid,
+    check_lon_lat,
+    check_lon_lat_valid,
     check_three_files,
     check_time_valid,
 )
@@ -44,8 +44,8 @@ class R2RAccessor:
         return get_longitude(self._obj)
 
     @cached_property
-    def lat_lon_valid(self):
-        return get_or_write_check(self._obj, "lat_lon_valid", check_lat_lon_valid)
+    def lon_lat_valid(self):
+        return get_or_write_check(self._obj, "lon_lat_valid", check_lon_lat_valid)
 
     @cached_property
     def time(self):
@@ -63,7 +63,7 @@ class R2RAccessor:
         return get_or_write_check(self._obj, "date_range", check_dt, dtrange=dt_range)
 
     def lon_lat_in(self, bbox: BBox) -> bool:
-        return get_or_write_check(self._obj, "lat_lon_range", check_lat_lon, bbox=bbox)
+        return get_or_write_check(self._obj, "lon_lat_range", check_lon_lat, bbox=bbox)
 
     @cached_property
     def con_report(self) -> str | None:
