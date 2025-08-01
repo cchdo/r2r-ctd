@@ -15,7 +15,7 @@ def is_deck_test(path: Path) -> bool:
 
     This method matches the pathname against a list of strings that are common to desk tests.
     """
-    logger.debug(f"Checking if {path} is a decktest")
+    logger.info(f"Checking if {path} is a decktest")
     # this should match the behavior of WHOI tests, but felt fragile to me
     substrs = (
         "deck",
@@ -42,7 +42,7 @@ def check_three_files(ds: xr.Dataset) -> bool:
     is then checked to see if it has all the correct keys. The details of finding/reading
     those files is left to odf.sbe.
     """
-    logger.debug("Checking if all three files")
+    logger.info("Checking if all three files")
     three_files = {"hex", "xmlcon", "hdr"}
     if (residual := three_files - ds.keys()) != set():
         logger.error(f"The following filetypes are missing {residual}")

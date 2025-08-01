@@ -40,7 +40,7 @@ class ContainerGetter:
     def __call__(self) -> Container:
         if self.container is not None:
             return self.container
-        logger.info("Launching container for running SBE software")
+        logger.debug("Launching container for running SBE software")
         client = docker.from_env()
         labels = ["us.rvdata.ctd-proc"]
         self.container = client.containers.run(
@@ -55,14 +55,14 @@ class ContainerGetter:
             # something it knows about
             ports=cast("Mapping[str, None]", {"3000/tcp": ("127.0.0.1",)}),
         )
-        logger.info(
+        logger.debug(
             f"Container launched as {self.container.name} with labels: {labels}"
         )
 
         def _kill_container():
             if self.container is None:
                 return
-            logger.info(f"attempting to kill wine container: {self.container.name}")
+            logger.debug(f"attempting to kill wine container: {self.container.name}")
             self.container.kill()
 
         atexit.register(_kill_container)
@@ -124,7 +124,7 @@ def run_con_report(xmlcon: NamedBytes):
             if stderr is not None:
                 logger.debug(f"{container.name} - {stderr.decode().strip()}")
                 if b"ReadConFile - failed to read" in stderr:
-                    logger.critical(
+                    logger.error(
                         "SBE ConReport.exe could not convert the xmlcon to a text report",
                     )
                     raise InvalidXMLCONError("Could not read XMLCON using seabird")

@@ -16,7 +16,15 @@ from r2r_ctd.state import (
 
 @click.group()
 @click.version_option()
-def cli(): ...
+@click.option("-q", "--quiet", count=True)
+def cli(quiet):
+    FORMAT = "%(message)s"
+    logging.basicConfig(
+        level=(quiet + 1) * 10,
+        format=FORMAT,
+        datefmt="[%X]",
+        handlers=[RichHandler()],
+    )
 
 
 @cli.command()
@@ -29,13 +37,6 @@ def cli(): ...
 @click.option("--gen-cnvs/--no-gen-cnvs", default=True)
 def qa(gen_cnvs: bool, paths: tuple[Path, ...]):
     """Run the QA routines on one or more directories"""
-    FORMAT = "%(message)s"
-    logging.basicConfig(
-        level="NOTSET",
-        format=FORMAT,
-        datefmt="[%X]",
-        handlers=[RichHandler()],
-    )
     for path in paths:
         breakout = Breakout(path=path)
         ra = ResultAggregator(breakout)

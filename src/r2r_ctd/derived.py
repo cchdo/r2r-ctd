@@ -219,7 +219,7 @@ def make_derive_psa(con_report: str) -> bytes:
             index="1",
             CalcID="15",
         )
-        if calc_array := template.find(".//CalcArray"):
+        if (calc_array := template.find(".//CalcArray")) is not None:
             calc_array.append(second_density)
             calc_array.attrib["Size"] = "2"
         else:

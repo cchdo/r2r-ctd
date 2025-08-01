@@ -55,7 +55,7 @@ class Interval(NamedTuple):
 
     def contains(self, dt: datetime) -> bool:
         """Given a datetime object, determine if it is inside the interval represented by this instance"""
-        logger.debug(f"Checking if {dt} is between {self.dtstart} and {self.dtend}")
+        logger.info(f"Checking if {dt} is between {self.dtstart} and {self.dtend}")
         return self.dtstart <= dt < self.dtend
 
 
