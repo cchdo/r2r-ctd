@@ -34,6 +34,16 @@ def container_ready(container, timeout=5):
     return False
 
 
+def test_docker():
+    client = docker.from_env()
+    logger.info(
+        client.containers.run(
+            "hello-world",
+            remove=True,
+        ).decode()
+    )
+
+
 class ContainerGetter:
     container: Container | None = None
 

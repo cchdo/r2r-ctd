@@ -5,6 +5,7 @@ import click
 from rich.logging import RichHandler
 
 from r2r_ctd.breakout import Breakout
+from r2r_ctd.docker_ctl import test_docker as _test_docker
 from r2r_ctd.reporting import (
     ResultAggregator,
     write_xml_qa_report,
@@ -25,6 +26,12 @@ def cli(quiet):
         datefmt="[%X]",
         handlers=[RichHandler()],
     )
+
+
+@cli.command()
+def test_docker():
+    "Run the docker 'hello-world' container and exit"
+    _test_docker()
 
 
 @cli.command()
