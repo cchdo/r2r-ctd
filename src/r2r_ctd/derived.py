@@ -15,7 +15,7 @@ from r2r_ctd.sbe import (
     derive_template,
     sensors_con_to_psa,
 )
-from r2r_ctd.state import NamedFile
+from r2r_ctd.state import NamedBytes
 
 logger = getLogger(__name__)
 
@@ -126,7 +126,7 @@ def get_time(ds: xr.Dataset) -> datetime | None:
 
 
 def make_con_report(ds: xr.Dataset):
-    xmlcon = NamedFile(ds.sbe.to_xmlcon(), name=ds.xmlcon.attrs["filename"])
+    xmlcon = NamedBytes(ds.sbe.to_xmlcon(), name=ds.xmlcon.attrs["filename"])
     return run_con_report(xmlcon)
 
 
@@ -291,11 +291,11 @@ def make_datcnv_psa(con_report: str) -> bytes:
 def make_cnvs(ds: xr.Dataset) -> dict[str, xr.Dataset]:
     con_report = ds.r2r.con_report
 
-    datcnv = NamedFile(make_datcnv_psa(con_report), name="datcnv.psa")
-    derive = NamedFile(make_derive_psa(con_report), name="derive.psa")
-    binavg = NamedFile(make_binavg_psa(con_report), name="binavg.psa")
+    datcnv = NamedBytes(make_datcnv_psa(con_report), name="datcnv.psa")
+    derive = NamedBytes(make_derive_psa(con_report), name="derive.psa")
+    binavg = NamedBytes(make_binavg_psa(con_report), name="binavg.psa")
 
-    xmlcon = NamedFile(ds.sbe.to_xmlcon(), name=ds.xmlcon.attrs["filename"])
-    hex = NamedFile(ds.sbe.to_hex(), name=ds.hex.attrs["filename"])
+    xmlcon = NamedBytes(ds.sbe.to_xmlcon(), name=ds.xmlcon.attrs["filename"])
+    hex = NamedBytes(ds.sbe.to_hex(), name=ds.hex.attrs["filename"])
 
     return run_sbebatch(hex, xmlcon, datcnv, derive, binavg)

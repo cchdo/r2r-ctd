@@ -13,7 +13,7 @@ from odf.sbe.io import string_loader
 
 from r2r_ctd.exceptions import InvalidXMLCONError, WineDebuggerEnteredError
 from r2r_ctd.sbe import batch
-from r2r_ctd.state import NamedFile
+from r2r_ctd.state import NamedBytes
 
 SBEDP_IMAGE = "ghcr.io/cchdo/sbedp:v2025.07.1"
 
@@ -88,7 +88,7 @@ exit 0;
 """
 
 
-def run_con_report(xmlcon: NamedFile):
+def run_con_report(xmlcon: NamedBytes):
     container = get_container()
 
     logger.info(f"Running in container {container.name}")
@@ -178,11 +178,11 @@ def attempts(tires=3):
 
 @attempts(3)
 def run_sbebatch(
-    hex: NamedFile,
-    xmlcon: NamedFile,
-    datcnv: NamedFile,
-    derive: NamedFile,
-    binavg: NamedFile,
+    hex: NamedBytes,
+    xmlcon: NamedBytes,
+    datcnv: NamedBytes,
+    derive: NamedBytes,
+    binavg: NamedBytes,
 ):
     container = get_container()
 

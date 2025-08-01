@@ -17,7 +17,20 @@ R2R_QC_VARNAME = "r2r_qc"
 logger = getLogger(__name__)
 
 
-class NamedFile(bytes):
+class NamedBytes(bytes):
+    """bytes object that has a name string property
+
+    This is for passing around files with their names internally.
+    The instance objects are "fragile" in that the name property will get dropped on any operation
+    that returns a new bytes object (which is most of them).
+
+    >>> b = NamedBytes(b'hello world', name="example.txt")
+    >>> b
+    b'hello world'
+    >>> b.name
+    'example.txt'
+    """
+
     name: str
 
     def __new__(cls, *args, name: str = ""):
