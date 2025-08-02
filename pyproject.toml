@@ -1,6 +1,8 @@
 [project]
 name = "r2r-ctd"
 dynamic = ["version"]
+license = "BSD-3-Clause"
+license-files = ["LICENSE.md"]
 description = "Add your description here"
 readme = "README.md"
 authors = [

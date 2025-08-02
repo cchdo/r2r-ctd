@@ -6,8 +6,8 @@
 # -- Project information -----------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
-project = "r2r.ctd"
-copyright = "2025, Andrew Barna"
+project = "r2r-ctd"
+copyright = "2025, Regents of the University of California"
 author = "Andrew Barna"
 
 # -- General configuration ---------------------------------------------------
