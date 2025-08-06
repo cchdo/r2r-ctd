@@ -4,11 +4,15 @@
 
 This package is published on pypi, so you can install it in your environment of choice using pip or pip compatible tool:
 
-> pip install r2r-ctd
+```
+pip install r2r-ctd
+```
 
 For actual usage it is probably more convenient to use a tool runner such as uvx:
 
-> uvx r2r-ctd
+```
+uvx r2r-ctd
+```
 
 :::{note}
 Using a tool runner, specifically `uvx`, is the preferred method and will be the way commands are show in the rest of this document.
@@ -21,6 +25,7 @@ Uv can installed via [homebrew][homebrew_url] (on a mac) or by following the [in
 
 ## Runtime Requirements
 
+(docker)=
 ### Docker
 
 This package has runtime requirements that make it a little more tricky than a pure python software stack.
@@ -32,7 +37,9 @@ Also ensure that docker itself is running after installation and whenever you ar
 The image will be pulled automatically on first use of the `qa` subcommand when it encounters something that needs processing in the image, but it is a bit large and download progress will not be shown.
 The image can be pulled in advance:
 
-> docker pull {{SBEDP_IMAGE}}
+```
+docker pull {{SBEDP_IMAGE}}
+```
 
 :::{warning}
 The docker image is for arm64 only.
@@ -44,7 +51,9 @@ Interacting with this companion image is done via the [Docker SDK](https://docke
 This requires that the docker unix socket be reachable.
 You can test that `r2r-ctd` can talk to docker by running the following:
 
-> uvx r2r-ctd test-docker
+```
+uvx r2r-ctd test-docker
+```
 
 This will download the docker hello-world and run it.
 If all is well, you'll see a bunch of debug level logs being printed to your console followed by the "Hello from Docker!" paragraph.
