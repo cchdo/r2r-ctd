@@ -5,15 +5,12 @@
 :caption: Contents:
 
 installing
+running
 R2R_CTD_QualityAssessment_Description
 :::
 
 Outline of what to write:
 
-* Running
-    * The qa command
-    * What is a breakout expected to look like
-    * How many can be run in parallel (however many p-cores you have, see `system_profiler SPHardwareDataType`)
 * SBE Container interaction
     * how to find the container
         * include if multiple are running
