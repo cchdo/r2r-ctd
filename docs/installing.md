@@ -37,9 +37,7 @@ Also ensure that docker itself is running after installation and whenever you ar
 The image will be pulled automatically on first use of the `qa` subcommand when it encounters something that needs processing in the image, but it is a bit large and download progress will not be shown.
 The image can be pulled in advance:
 
-```
-docker pull {{SBEDP_IMAGE}}
-```
+{{SBEDP_IMAGE}}
 
 :::{warning}
 The docker image is for arm64 only.

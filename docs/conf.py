@@ -31,4 +31,10 @@ autoapi_dirs = ["../src"]
 
 myst_enable_extensions = ["colon_fence", "fieldlist", "substitution"]
 
-myst_substitutions = {"SBEDP_IMAGE": SBEDP_IMAGE}
+# this substitution needs to be the full code block because
+# myst will not process just the image name substitution in a code block
+myst_substitutions = {
+    "SBEDP_IMAGE": f"""```
+docker pull {SBEDP_IMAGE}
+```"""
+}
