@@ -1,3 +1,5 @@
+from r2r_ctd.docker_ctl import SBEDP_IMAGE
+
 # Configuration file for the Sphinx documentation builder.
 #
 # For the full list of built-in configuration values, see the documentation:
@@ -27,4 +29,6 @@ html_static_path = ["_static"]
 
 autoapi_dirs = ["../src"]
 
-myst_enable_extensions = ["colon_fence", "fieldlist"]
+myst_enable_extensions = ["colon_fence", "fieldlist", "substitution"]
+
+myst_substitutions = {"SBEDP_IMAGE": SBEDP_IMAGE}

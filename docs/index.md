@@ -3,15 +3,13 @@
 :::{toctree}
 :maxdepth: 2
 :caption: Contents:
+
+installing
 R2R_CTD_QualityAssessment_Description
 :::
 
 Outline of what to write:
 
-* Installing
-    * uvx usage only basically
-    * Docker requirements
-    * test docker subcommand
 * Running
     * The qa command
     * What is a breakout expected to look like
