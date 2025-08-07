@@ -413,7 +413,7 @@ class ResultAggregator:
         problem_casts = [
             data[R2R_QC_VARNAME].attrs["station_name"]
             for data in self.breakout
-            if not data.r2r.lon_lat_in(self.breakout.bbox)
+            if data.r2r.lon_lat_valid and not data.r2r.lon_lat_in(self.breakout.bbox)
         ]
         return Info(
             " ".join(problem_casts),
