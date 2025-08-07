@@ -1,3 +1,4 @@
+from datetime import datetime
 from functools import cached_property
 from logging import getLogger
 from typing import Literal
@@ -36,27 +37,27 @@ class R2RAccessor:
         self._obj = xarray_obj
 
     @cached_property
-    def latitude(self):
+    def latitude(self) -> float | None:
         return get_latitude(self._obj)
 
     @cached_property
-    def longitude(self):
+    def longitude(self) -> float | None:
         return get_longitude(self._obj)
 
     @cached_property
-    def lon_lat_valid(self):
+    def lon_lat_valid(self) -> bool:
         return get_or_write_check(self._obj, "lon_lat_valid", check_lon_lat_valid)
 
     @cached_property
-    def time(self):
+    def time(self) -> datetime | None:
         return get_time(self._obj)
 
     @cached_property
-    def time_valid(self):
+    def time_valid(self) -> bool:
         return get_or_write_check(self._obj, "date_valid", check_time_valid)
 
     @cached_property
-    def all_three_files(self):
+    def all_three_files(self) -> bool:
         return get_or_write_check(self._obj, "three_files", check_three_files)
 
     def time_in(self, dt_range: Interval) -> bool:
@@ -97,7 +98,7 @@ class R2RAccessor:
 
     @cached_property
     def bottles_fired(self) -> bool:
-        """This cast as bottle trip records
+        """This cast has bottle trip records in its bl file.
 
         A trip record has 5 components:
 
@@ -107,7 +108,7 @@ class R2RAccessor:
         * scan start (int)
         * scan end (int)
 
-        this works by checking each line to see if any of the 4 "int" components parse as ints
+        This works by checking each line to see if any of the 4 "int" components parse as ints
         and returning true if any of them can.
 
         The bl file records every attempt to close a bottle and does not necessarily reflect how many bottles actually closed
@@ -130,7 +131,7 @@ class R2RAccessor:
 
         return False
 
-    def write_con_report(self, breakout: "Breakout"):
+    def write_con_report(self, breakout: "Breakout") -> None:
         if self.con_report is None:
             return None
 
@@ -139,7 +140,9 @@ class R2RAccessor:
         con_path.write_text(self.con_report)
         logger.info(f"Conreport written to {con_path}")
 
-    def write_cnv(self, breakout: "Breakout", cnv: Literal["cnv_24hz", "cnv_1db"]):
+    def write_cnv(
+        self, breakout: "Breakout", cnv: Literal["cnv_24hz", "cnv_1db"]
+    ) -> None:
         cnv_contents = getattr(self, cnv)
         if cnv_contents is None:
             return None

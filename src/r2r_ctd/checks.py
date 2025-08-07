@@ -1,3 +1,13 @@
+"""The basic check functions that are done on files or paths.
+
+The original intent was that all the functions that produce the 4 element stoplight report would live here and be 1-1 with each check in that report.
+It became clear that this was not going to work well pretty early as most of those report elements are from an aggregate over all the stations.
+Additionally, some checks serve as a sieve, for example, stations where :py:func:`is_deck_test` returns true aren't checked or considered in the report at all.
+
+The first check in the qa report is just checking that the breakout itself is valid before anything else happens.
+That check is over in :py:obj:`r2r_ctd.breakout.Breakout.manifest_ok`.
+"""
+
 from logging import getLogger
 from pathlib import Path
 from typing import TYPE_CHECKING
@@ -38,9 +48,15 @@ def is_deck_test(path: Path) -> bool:
 def check_three_files(ds: xr.Dataset) -> bool:
     """Check that each hex file has both an xmlcon and hdr files associated with it.
 
+    Stations are, at a minimum, expected to have a .hex, .xmlcon, and .hdr file all
+    next to each other. For example, a ``00101.hex`` should have a ``00101.hdr`` and
+    ``00101.xmlcon`` file also present. In practice, this files need to be found in a
+    case insensitive way, for example, the associated ``.xmlcon`` for a ``rr1608_01.hex``
+    file might be named ``RR1608_01.XMLCON``. The underlying odf.sbe library takes care
+    of these details for us.
+
     The input dataset is expected conform output of odf.sbe.read_hex. This dataset
-    is then checked to see if it has all the correct keys. The details of finding/reading
-    those files is left to odf.sbe.
+    is then checked to see if it has all the correct keys.
     """
     logger.info("Checking if all three files")
     three_files = {"hex", "xmlcon", "hdr"}
