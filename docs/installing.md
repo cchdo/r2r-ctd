@@ -53,7 +53,7 @@ You can test that `r2r-ctd` can talk to docker by running the following:
 uvx r2r-ctd test-docker
 ```
 
-This will download the docker hello-world and run it.
+This will download the docker [hello-world](https://hub.docker.com/_/hello-world)[^smallver] and run it.
 If all is well, you'll see a bunch of debug level logs being printed to your console followed by the "Hello from Docker!" paragraph.
 If things are not well, an exception will be thrown, in testing a rather cryptic "FileNotFoundError" would be one of the last lines of the traceback.
 Things to check:
@@ -67,6 +67,8 @@ Things to check:
 3. If the `docker.sock` is not in its default location, is the `DOCKER_HOST` envar set?
 
    On a mac try setting this to `unix:///Users/<user>/.docker/run/docker.sock`, be sure to replace `<user>` with your actual home directory name. 
+
+[^smallver]: The linux container is a few kb in size, not the hundred+ MB for the windows based containers (nanoserver).
 
 ### Host
 As such, at this time the python part of `r2r-ctd` needs to be running on the docker host system and not in a container itself or a remote machine.

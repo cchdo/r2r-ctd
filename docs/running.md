@@ -46,22 +46,29 @@ uvx r2r-ctd qa --no-gen-cnvs <path_to_breakout>
 ```
 
 ## Breakout Structure
+When R2R receives data from a cruise it will be split up into separate collections called "breakouts".
+To be processed, the breakout is expected to be a directory with contents, not an archive such as a zip file.
+`r2r-ctd` does no interaction with remote systems and has no assumptions about how to obtain the breakouts or put ths qa results back into.
+
 The R2R CTD Breakout must have the following structure and _almost_ follows the [BagIt][bagit] standard[^bagit_note].
+This section will follow the nomenclature in the [BagIt terminology section](https://www.rfc-editor.org/rfc/rfc8493#section-1.3).
 The starting `/` will refer here to the root of the breakout
-[^bagit_note]: It’s basically only missing the `bagit.txt` file.
+[^bagit_note]: All the test breakouts I received where basically only missing the `bagit.txt` [Bag declaration tag file](https://www.rfc-editor.org/rfc/rfc8493#section-2.1.1).
 
 
-* A `/manifest-md5.txt` containing a list of md5 file hashes and relative paths to the files corresponding to those hashes.
-* A `/qa` directory containing at a minimum a `*_qa.2.0.xmlt` file that conforms to the [R2R QA 2.0 Schema](http://schema.rvdata.us/2.0/qareport.xsd) schema.
+* A `/manifest-md5.txt` [payload manifest](https://www.rfc-editor.org/rfc/rfc8493#section-2.1.3), containing a list of md5 file hashes and relative paths to the files corresponding to those hashes.
+  Only md5 is supported by `r2r-ctd` at this time.
+* A `/data` [payload directory](https://www.rfc-editor.org/rfc/rfc8493#section-2.1.2) containing the datafiles that will be checked.
+* A `/qa` tag directory containing at a minimum a `*_qa.2.0.xmlt` tag file that conforms to the [R2R QA 2.0 Schema](http://schema.rvdata.us/2.0/qareport.xsd) schema.
   The prefix of this xml file is probably some combination of cruise name and breakout id, however this is not too important, only that exactly one file matches this pattern.
 
-While the [BagIt][BagIt] spec wants all the actual content to be in a `/data` directory, `r2r-ctd` just uses the paths inside the `manifest-md5.txt` file.
-The details of what cruise specific files are being looked for within the `/data` directory are in the API documentation.
+While the [BagIt][bagit] spec requires all the actual content to be in the `/data` directory, `r2r-ctd` just uses the paths inside the `manifest-md5.txt` file and does not do any validation that this breakout conforms to the [BagIt specification][bagit].
+The details of what cruise specific files are being looked for within the `/data` directory are in the [API documentation]().
 
 
-[bagit]: https://en.wikipedia.org/wiki/BagIt
+[bagit]: https://www.rfc-editor.org/rfc/rfc8493
 
-### `*_qa.2.0.xmlt`
+### QA Template File: `*_qa.2.0.xmlt`
 This xml file is the "template" that will both be updated with the results of the QA routines, but also contains some of the metadata that the breakout files are tested against.
 Specifically, the cruise start/end dates and the bounding box.
 
@@ -74,7 +81,7 @@ Inside this `/proc` directory are several other directories:
 
 * `/proc/nc` has netCDF files containing all the "state" of the QA routines, this includes test results and derived files.
   These netCDF files are an implementation detail and the contents can be ignored unless things are going really wrong.
-  These files can be safely deleted, but is removes the "cache" of the QA results for each cast.
+  These files can be safely deleted, but it removes the "cache" of the QA results for each cast.
   Do not modify these files.
 * `/proc/qa` will have the qa results:
     * If the QA routines finished a `*_qa.2.0.xml` will be present (note the lack of `t` in the file extension), updated with results
@@ -89,7 +96,7 @@ Since docker provides reasonable process isolation for the Windows based convers
 This is most simply done by having multiple terminal sessions open and running the basic usage commands above on a single breakout in each session.
 In the same session you could also use something like `xargs` to parallelize, but the emitted log message will be muxed making it difficult to follow what is going on.
 
-In general, you'll want to limit the number of parallel processors going to the number of physical cores in your CPU, in the case of Apple arm hardware, this is the number of performance cores your machine has.
+In general, you'll want to limit the number of parallel processors going to the number of physical cores in your CPU, in the case of Apple arm hardware, this is further the number of performance cores your machine has.
 To see how many performance cores are present on an M-family mac, you can use the `system_profiler` command:
 ```
 system_profiler SPHardwareDataType
