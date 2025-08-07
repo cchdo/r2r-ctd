@@ -23,6 +23,11 @@ the QA processing should not throw or crash in the case of invalid input files, 
 If the xmlt and manifrst file are malformed or missing, something has gone wrong on the r2r side that needs to be investigated.
 :::
 
+:::{tip}
+It is always safe to interrupt/kill the python process with a {kbd}`control` + {kbd}`c` and restart the QA process.
+There is significant caching of intermediate results and the QA process should quickly catch up to where it left off.
+:::
+
 ### Switches
 #### Quiet `-q`
 The verbosity of the logging can be controlled by adding one or more `-q` flags after the `r2r-ctd` but _before_ the `qa` subcommand.
@@ -44,6 +49,14 @@ Adding a `--no-gen-cnvs` will skip generating these files:
 ```
 uvx r2r-ctd qa --no-gen-cnvs <path_to_breakout>
 ```
+
+:::{warning}
+In testing and development, occasionally in the production of the cnv products the underlying seabird software programs would not exit.
+There would be no open GUI windows and I have been unable find logs or debug information about what might be causing this.
+
+It is safe to kill ({kbd}`control` + {kbd}`c`) and restart the QA process when this occurs.
+The python program, not the docker container, the container should clean itself up when python exits.
+:::
 
 ## Breakout Structure
 When R2R receives data from a cruise it will be split up into separate collections called "breakouts".
