@@ -63,7 +63,11 @@ The starting `/` will refer here to the root of the breakout
   The prefix of this xml file is probably some combination of cruise name and breakout id, however this is not too important, only that exactly one file matches this pattern.
 
 While the [BagIt][bagit] spec requires all the actual content to be in the `/data` directory, `r2r-ctd` just uses the paths inside the `manifest-md5.txt` file and does not do any validation that this breakout conforms to the [BagIt specification][bagit].
-The details of what cruise specific files are being looked for within the `/data` directory are in the [API documentation]().
+The details of what cruise specific files are being looked for within the `/data` directory are in the [API documentation](#r2r_ctd).
+Specifically [](r2r_ctd.breakout.Breakout.stations_hex_paths) for what is considered as a station[^station], and [](#r2r_ctd.checks.check_three_files) for what each station is expected to have.
+
+[^station]: This differs a bit from CCHDO terminology where a station has multiple casts/profiles, here each station is a single data recording saving session within SeaSave. 
+            The CTD might not have even gone in the water.
 
 
 [bagit]: https://www.rfc-editor.org/rfc/rfc8493
