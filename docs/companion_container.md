@@ -7,8 +7,10 @@ The companion container is not launched until it needs to have something run ins
 One is it launched, it will remain running and ready to receive work until the controlling python process exits.
 Caching of the results means that the container might noy be launched at all if all the derivative files have been made already.
 The two output this container makes are:
+
 * A "human readable" configuration report from the .xmlcon files (ConReport.exe)
 * cnv files, which are table like text data files converted from the raw inputs (SBEBatch.exe which calls some other programs)
+
 The configuration report is required for the QA routines to finish, but is a fully CLI program that seems to be very robust in the container environment.
 The cnv files are not required for the QA to finish and their generation can be suppressed.
 Specifics for how the programs are run and how data get in and out of the container are in the [](#r2r_ctd.docker_ctl) section of the API documentation.
