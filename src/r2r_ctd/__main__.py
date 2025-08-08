@@ -1,3 +1,18 @@
+"""The main entry point for this software, specifically the :py:func:`qa` function.
+
+Inside the that qa func, the basic architecture is, for each ``path`` in ``paths``:
+
+* Construct a :py:class:`~r2r_ctd.breakout.Breakout` instance passing ``path`` as the sole argument.
+* Construct a :py:class:`~r2r_ctd.reporting.ResultAggregator` from that breakout instance.
+* Write the geoCSV, the :py:class:`~r2r_ctd.breakout.Breakout` instance knows where, the :py:class:`~r2r_ctd.reporting.ResultAggregator` knows the contents.
+* For each station in :py:class:`~r2r_ctd.breakout.Breakout.stations_hex_paths`, generate and write the instrument configuration report, requires the companion docker container.
+* Optionally and by default: for each station in :py:class:`~r2r_ctd.breakout.Breakout.stations_hex_paths`, generate and write the two cnv products, requires the companion docker container.
+* Finally, write the xml QA report.
+
+
+The majority of the work of the QA is being done by the :py:class:`~r2r_ctd.reporting.ResultAggregator`.
+"""
+
 import logging
 from pathlib import Path
 
@@ -43,7 +58,7 @@ def test_docker():
 )
 @click.option("--gen-cnvs/--no-gen-cnvs", default=True)
 def qa(gen_cnvs: bool, paths: tuple[Path, ...]):
-    """Run the QA routines on one or more directories"""
+    """Run the QA routines on one or more directories."""
     for path in paths:
         breakout = Breakout(path=path)
         ra = ResultAggregator(breakout)
