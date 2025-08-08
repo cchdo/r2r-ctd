@@ -1,3 +1,9 @@
+"""Convenience classes for interacting with a single breakout directory.
+
+Has one main class: :py:class:`Breakout`.
+The other two classes: :py:class:`BBox` and :py:class:`Interval` are in here because they are properties of the cruise of that breakout.
+"""
+
 from dataclasses import dataclass
 from datetime import datetime, timedelta
 from functools import cached_property
@@ -149,9 +155,9 @@ class Breakout:
 
     @property
     def stations_hex_paths(self) -> list[Path]:
-        """Return a list of hex paths that are not deck tests
+        """Return a list of hex paths that are not deck tests, i.e. :py:func:`.is_deck_test` is False for these paths.
 
-        For the purposes of QC, these are the set of stations to operate on
+        For the purposes of QC, these are the set of stations to operate on.
         """
         return [path for path in self.hex_paths if path not in self.deck_test_paths]
 
