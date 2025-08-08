@@ -1,3 +1,11 @@
+"""Classes and functions that iterate through stations doing QA tests, aggregating the results, and reporting those results in the form of and XML element tree.
+
+Because we are making XML, the code in here is a little verbose.
+The :py:class:`ResultAggregator` is what iterates though stations, performs or asks for the QA results for each station, and constructs the final QA "certificate".
+The builder pattern from lxml is being used here to allow the code to look similar to the XML that it is generating.
+If you are looking at the code yourself, start with :py:meth:`ResultAggregator.certificate` and follow it from there.
+"""
+
 import textwrap
 from dataclasses import dataclass
 from datetime import UTC, datetime
@@ -29,6 +37,7 @@ E = ElementMaker(
     namespace="https://service.rvdata.us/schema/r2r-2.0",
     nsmap={"r2r": "https://service.rvdata.us/schema/r2r-2.0"},
 )
+"""lxml element maker with the r2r namespace configured, a whole bunch of Element instances follow representing different XML elements that will be constructed"""
 
 # XML QA Certificate Elements
 Certificate = E.certificate
@@ -49,11 +58,14 @@ Time = E.time
 # XML QA Reference elements (links to files)
 Reference = E.reference
 
-ALL = 100  # percent
-A_FEW = 50  # percent
+ALL = 100
+"""Literal 100 representing 100 percent"""
+A_FEW = 50
+"""Literal 50 representing 50 percent, defines the cutoff between "yellow" and "red" ratings"""
 
 
 def overall_rating(rating: Literal["G", "R", "Y", "N", "X"]) -> _Element:
+    """Given a string code rating, wrap it in a :py:obj:`Rating` with the correct description attribute set"""
     return Rating(
         rating,
         description=(
@@ -67,7 +79,10 @@ def overall_rating(rating: Literal["G", "R", "Y", "N", "X"]) -> _Element:
 
 
 def file_presence(rating: Literal["G", "R"], test_result: str | int) -> _Element:
-    """Construct the Element for the all raw files test"""
+    """Constructs the XML element representing the "Presence of All Raw Files" test result
+
+    :param test_result: Should be a string or int in the interval (0, 100) representing the percentage of files that passed this test.
+    """
     return Test(
         Rating(rating),
         TestResult(str(test_result), uom="Percent"),
@@ -78,7 +93,10 @@ def file_presence(rating: Literal["G", "R"], test_result: str | int) -> _Element
 
 
 def valid_checksum(rating: Literal["G", "R"]) -> _Element:
-    """Construct the Element for the valid checksum test"""
+    """Constructs the XML element representing the "Valid Checksum for All Files in Manifest" test result
+
+    Note that this check is pass/fail
+    """
     return Test(
         Rating(rating),
         Bounds(
@@ -93,6 +111,10 @@ def lon_lat_range(
     rating: Literal["G", "R", "Y", "N", "X"],
     test_result: str | int,
 ) -> _Element:
+    """Constructs the XML element representing the "Presence of All Raw Files" test result
+
+    :param test_result: Should be a string or int in the interval (0, 100) representing the percentage of files that passed this test.
+    """
     return Test(
         Rating(rating),
         TestResult(str(test_result), uom="Percent"),
@@ -106,6 +128,10 @@ def date_range(
     rating: Literal["G", "R", "Y", "N", "X"],
     test_result: str | int,
 ) -> _Element:
+    """Constructs the XML element representing the "Dates within NAV Ranges" test result
+
+    :param test_result: Should be a string or int in the interval (0, 100) representing the percentage of files that passed this test.
+    """
     return Test(
         Rating(rating),
         TestResult(str(test_result), uom="Percent"),
@@ -117,37 +143,49 @@ def date_range(
 
 @dataclass
 class ResultAggregator:
+    """Dataclass which iterates though all the stations their tests and aggregates their results and generates the "info blocks".
+
+    It is structured in the same order that the results appear in the XML.
+    Some ratings require extra information, e.g. the geographic bounds test needs to know if any of the stations are missing nav entirely or if the bounding box itself is missing.
+    """
+
     breakout: Breakout
 
     @cached_property
     def presence_of_all_files(self) -> int:
+        """Iterate though the stations and count how many have :py:meth:`~r2r_ctd.accessors.R2RAccessor.all_three_files`"""
         results = [data.r2r.all_three_files for data in self.breakout]
         return int((results.count(True) / len(results)) * 100)
 
     @property
     def presence_of_all_files_rating(self) -> Literal["G", "R"]:
+        """Pass/fail result string of :py:meth:`presence_of_all_files` where 100 is a pass"""
         if self.presence_of_all_files == ALL:
             return "G"
         return "R"
 
     @property
     def valid_checksum_rating(self) -> Literal["G", "R"]:
+        """Pass/fail result string of :py:meth:`~r2r_ctd.breakout.Breakout.manifest_ok`"""
         if self.breakout.manifest_ok:
             return "G"
         return "R"
 
     @cached_property
     def lon_lat_nav_valid(self) -> int:
+        """Iterate though the stations and count how many are :py:meth:`~r2r_ctd.accessors.R2RAccessor.lon_lat_valid`"""
         results = [data.r2r.lon_lat_valid for data in self.breakout]
         return int((results.count(True) / len(results)) * 100)
 
     @cached_property
     def lon_lat_nav_range(self) -> int:
+        """Iterate though the stations and count how many are :py:meth:`~r2r_ctd.accessors.R2RAccessor.lon_lat_in` the :py:meth:`~r2r_ctd.breakout.Breakout.bbox`"""
         results = [data.r2r.lon_lat_in(self.breakout.bbox) for data in self.breakout]
         return int((results.count(True) / len(results)) * 100)
 
     @property
     def lon_lat_nav_ranges_rating(self) -> Literal["G", "Y", "R", "N", "X"]:
+        """Calculate the rating string for the nav bounds test, also needs to check if all of the stations are missing nav or if the breakout is missing bounds."""
         if self.lon_lat_nav_valid == 0:  # no readable positions to test
             return "X"  # black
 
@@ -166,11 +204,13 @@ class ResultAggregator:
 
     @cached_property
     def time_valid(self) -> int:
+        """Iterate though the stations and count how many are :py:meth:`~r2r_ctd.accessors.R2RAccessor.time_valid`"""
         results = [data.r2r.time_valid for data in self.breakout]
         return int((results.count(True) / len(results)) * 100)
 
     @cached_property
     def time_range(self) -> int:
+        """Iterate though the stations and count how many are :py:meth:`~r2r_ctd.accessors.R2RAccessor.time_in` the :py:meth:`~r2r_ctd.breakout.Breakout.temporal_bounds`"""
         results = [
             data.r2r.time_in(self.breakout.temporal_bounds) for data in self.breakout
         ]
@@ -178,6 +218,7 @@ class ResultAggregator:
 
     @property
     def time_rating(self) -> Literal["G", "Y", "R", "N", "X"]:
+        """Calculate the rating string for the temporal bounds test, also needs to check if all of the stations are missing time or if the breakout is missing bounds."""
         if self.time_valid == 0:  # no readable dates to test
             return "X"  # black
 
@@ -196,6 +237,20 @@ class ResultAggregator:
 
     @property
     def rating(self):
+        """Aggregates the ratings from all the *_rating properties.
+
+        Takes the "worst" rating as the overall rating in the following order:
+
+        * R (red)
+        * N (grey)
+        * X (Black)
+        * Y (Yellow)
+        * G (Green)
+
+        The red precedence over the black and yellow is from my interpretation of the rating string in the original XML:
+
+          GREEN (G) if all tests GREEN, RED (R) if at least one test RED, else YELLOW (Y); Gray(N) if no navigation was included in the distribution; X if one or more tests could not be run.
+        """
         ratings = {
             self.presence_of_all_files_rating,
             self.valid_checksum_rating,
@@ -214,6 +269,7 @@ class ResultAggregator:
 
     @property
     def info_total_raw_files(self):
+        """Info Element with the length of :py:class:`r2r_ctd.breakout.Breakout.hex_paths`"""
         return Info(
             str(len(self.breakout.hex_paths)),
             name="Total Raw Files",
@@ -222,7 +278,7 @@ class ResultAggregator:
 
     @cached_property
     def info_number_bottles(self):
-        """Get the number of casts that have bottles fired
+        """Info Element with the number of casts that have bottles fired
 
         .. admonition:: WHOI Divergence
             :class: warning
@@ -248,6 +304,10 @@ class ResultAggregator:
 
     @cached_property
     def info_model_number(self):
+        """Info Element with the CTD model number (e.g. SBE911)
+
+        See :py:func:`r2r_ctd.derived.get_model`
+        """
         model = ""
         for data in self.breakout:
             con_report = data.r2r.con_report
@@ -260,6 +320,7 @@ class ResultAggregator:
 
     @cached_property
     def info_number_casts_with_nav_all_scans(self):
+        """Info Element with the number of casts that have the string "Store Lat/Lon Data = Append to Every Scan" in the header file"""
         number = 0
         for data in self.breakout:
             if (
@@ -272,6 +333,7 @@ class ResultAggregator:
 
     @cached_property
     def info_casts_without_all_raw(self):
+        """Info Element with a space separated list of station names that did not have :py:meth:`~r2r_ctd.accessors.R2RAccessor.all_three_files`"""
         problem_casts = []
         for station in self.breakout.stations_hex_paths:
             data = self.breakout[station]
@@ -327,6 +389,10 @@ class ResultAggregator:
 
     @cached_property
     def info_casts_with_dock_deck_test_in_file_name(self):
+        """Info Element with a space separated list of station names that look like "deck tests"
+
+        See :py:func:`r2r_ctd.checks.is_deck_test`
+        """
         return Info(
             " ".join(path.name for path in self.breakout.deck_test_paths),
             name="Casts with dock/deck and test in file name",
@@ -396,6 +462,7 @@ class ResultAggregator:
 
     @cached_property
     def info_casts_with_bad_nav(self):
+        """Info Element with a space separated list of station names that aren't :py:meth:`~r2r_ctd.accessors.R2RAccessor.lon_lat_valid`"""
         problem_casts = [
             data[R2R_QC_VARNAME].attrs["station_name"]
             for data in self.breakout
@@ -410,6 +477,7 @@ class ResultAggregator:
 
     @cached_property
     def info_casts_failed_nav_bounds(self):
+        """Info Element with a space separated list of station names that are :py:meth:`~r2r_ctd.accessors.R2RAccessor.lon_lat_valid` but aren't in :py:meth:`~r2r_ctd.breakout.Breakout.bbox`"""
         problem_casts = [
             data[R2R_QC_VARNAME].attrs["station_name"]
             for data in self.breakout
@@ -476,6 +544,7 @@ class ResultAggregator:
 
     @property
     def certificate(self):
+        """The Certificate Element with all the above test results"""
         return Certificate(
             overall_rating(self.rating),
             Tests(
