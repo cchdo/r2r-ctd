@@ -102,6 +102,15 @@ def get_filename(da: xr.DataArray) -> str:
 
 
 def initialize_or_get_state(breakout: "Breakout", hex_path: Path) -> xr.Dataset:
+    """Given a hex_path, get the state as an xarray Dataset
+
+    This will either find the existing netCDF file and open it (not load) or make
+    a new state Dataset by calling :py:func:`odf.sbe.read_hex` on that path.
+
+    This adds an attribute to the dataset ``__path`` that is used to keep track of where this
+    file is actually written.
+    This attribute is stripped by :py:func:`write_ds_r2r` when the Dataset is serialized.
+    """
     state_path = get_state_path(breakout, hex_path)
 
     if state_path.exists():
