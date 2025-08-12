@@ -237,7 +237,7 @@ class ResultAggregator:
 
     @property
     def rating(self):
-        """Aggregates the ratings from all the *_rating properties.
+        """Aggregates the ratings from all the ``*_rating`` properties.
 
         Takes the "worst" rating as the overall rating in the following order:
 
