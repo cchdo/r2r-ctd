@@ -1,3 +1,42 @@
+"""Utilities for interacting with and managing the lifecycle of the companion container.
+
+Basic architecture is as follows:
+
+* A single container will exist for the lifetime of this python process, it will not be launched unless needed.
+* A single temporary directory will be mapped into that container, which will be cleaned up when the python process exits.
+* The functions that run things, will create their own temporary directory inside that will be cleaned up when these functions return (or throw).
+* The functions work by creating a small shell script inside their temporary directory and calling that.
+* As a convention, the shell script is placed inside an ``sh`` directory, the input files in an ``in`` directory, and container output files placed in an ``out`` directory
+* The container will be killed when python exist.
+* If the wine debugger is entered, the container is restarted and the routine is tried again.
+
+Temporary directory structure::
+
+  tmp_container  <-- gets bound to the container when first launched
+  └── tmp_func <-- created inside the above temporary dir when each function is called
+      ├── in <-- has input files (xmlcon, hex, etc..)
+      ├── out <-- gets output files written (or moved)
+      └── sh <-- shell scripts that run the SBE Software
+
+The above architecture is largely due to many lessons learned during development:
+
+The container stays running due to a very large startup cost.
+    Earlier versions of this software launched/removed the container with each function call.
+    However, when monitoring resource usage, there was significant hard disk activity (GBs being read/written at launch).
+    This was fixed/mitigated somewhat by improvements to the container image itself, but by the time those improvements were made, this had already switched to using a single container architecture.
+    Even with the improved container, it was still faster and less hard on my hard drive when a single container was used.
+
+The nested temporary directories are due to two requirements.
+    When the container is launched, we need to bind some directory as a volume mount to get data in/out of the container.
+    This directory needs to exist when the container is launched, and exist for the lifetime of the container.
+    Each function needs to add it own files for processing, temporary directories are used here so that they are cleaned up when the function exits.
+    This avoids functions conflicting with each other and for this software to try to clean up individual files itself.
+
+Shell scripts are mapped in rather than baked in.
+    To keep the container itself portable and not need rebuilds constantly, it's easier to add the shell scripts at runtime rather than at image build time.
+    This also increases the utility of that container image outside of this QA content.
+"""
+
 import atexit
 import time
 from collections.abc import Mapping
@@ -16,6 +55,7 @@ from r2r_ctd.sbe import batch
 from r2r_ctd.state import NamedBytes
 
 SBEDP_IMAGE = "ghcr.io/cchdo/sbedp:v2025.07.1"
+"""The current image that will be downloaded/used for the processing"""
 
 logger = getLogger(__name__)
 
@@ -23,6 +63,7 @@ _tmpdir = TemporaryDirectory()  # singleton tempdir for IO with docker container
 
 
 def container_ready(container, timeout=5):
+    """Checks the health status of the ``container``, blocks and waits for the healthy state or ``timeout`` seconds."""
     sleep = 0.5
     tries = timeout / sleep
     while tries:
@@ -35,6 +76,7 @@ def container_ready(container, timeout=5):
 
 
 def test_docker():
+    """Download and run the ``hello-world`` container, used as a check that this software is talking to the container runtime"""
     client = docker.from_env()
     logger.info(
         client.containers.run(
@@ -45,9 +87,24 @@ def test_docker():
 
 
 class ContainerGetter:
+    """Wrapper class that manages the single container instance.
+
+    .. warning::
+        Do not use this class yourself, use the instance already made at :py:obj:`get_container`
+
+    Calling an instance of this class will return the container for this python processes, the container will be launched if not already running.
+    """
+
     container: Container | None = None
 
     def __call__(self) -> Container:
+        """Get the container instance for this python process
+
+        If the container is already running, return a reference to it.
+        If the container is not already running, launch it, wait for it to be ready, then return a reference to it.
+
+        Launching the container will also register a kill function that will kill the container at python exit.
+        """
         if self.container is not None:
             return self.container
         logger.debug("Launching container for running SBE software")
@@ -84,6 +141,7 @@ class ContainerGetter:
 
 
 get_container = ContainerGetter()
+"""Pre initialized container getter, there must only be one per python process"""
 
 con_report_sh = r"""export DISPLAY=:1
 export HODLL=libwow64fex.dll
@@ -96,9 +154,18 @@ do
 done
 exit 0;
 """
+"""The shell script for running ConReport.exe
+
+An earlier versions of this tried to prepare all the xmlcon files and process them all at once.
+First using the built into ConReport.exe globbing, then using a loop that still exists.
+When the :py:func:`run_con_report` function was switch to just one at a time, this loop based script continued to work fine so was not modified."""
 
 
 def run_con_report(xmlcon: NamedBytes):
+    """Run ConReport.exe on the xmlcon file ``xmlcon``
+
+    See the module level overview for how/why this function works the way it does.
+    """
     container = get_container()
 
     logger.info(f"Running in container {container.name}")
@@ -156,9 +223,17 @@ cd /.wine/drive_c/proc/${TMPDIR_R2R}/in;
 wine "/.wine/drive_c/Program Files (x86)/Sea-Bird/SBEDataProcessing-Win32/SBEBatch.exe" batch.txt ${R2R_HEXNAME} ../out ${R2R_XMLCON} ../out/${R2R_TMPCNV} -s
 exit 0;
 """
+"""Shell script that runs SBEBatch.exe
+
+Mostly works the same as you might run manually, however it will remove the Sea-Bird state directory from the wine users home directory.
+If a previous batch conversion didn't go well or was interrupted, SBEBatch would ask via a GUI popup if you want to continue where it left off.
+Since this was in the form of a gui pop up, it would just block waiting for user interaction.
+"""
 
 
 def attempts(tires=3):
+    """Decorator that looks for the WineDebuggerEntered exception and restarts the container and tries the function again."""
+
     def decorator(func):
         @wraps(func)
         def wrapper(*args, **kwargs):
@@ -194,6 +269,12 @@ def run_sbebatch(
     derive: NamedBytes,
     binavg: NamedBytes,
 ):
+    """Run SBEBatch.exe on the input files.
+
+    ``hex`` and ``xmlcon`` are from the cruise breakout.
+    ``datcnv``, ``derive`` and ``binavg`` are the configuration files for each step that this particular station is processed with.
+
+    See :py:mod:`r2r_ctd.sbe` for some more details on these configuration files."""
     container = get_container()
 
     logger.info(f"Running in container {container.name}")
