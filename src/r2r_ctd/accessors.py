@@ -1,3 +1,26 @@
+"""Adds an .r2r accessor to the xarray.Dataset objects in use within this software.
+
+Mostly these are wrappers around functions in :py:mod:`r2r_ctd.derived` for nice syntax.
+Instead of writing::
+
+    get_longitude(ds)
+
+I could write::
+
+    ds.r2r.longitude
+
+While that example isn't very short, some of the more involved derived products benefit nicely from this e.g.::
+
+    get_or_write_derived_file(ds, "con_report", make_con_report)
+
+Makes the configuration report, with the accessor pattern, this becomes as simple as getting the longitude::
+
+    d2.r2r.con_report
+
+All that complexity is hidden from me.
+Does it need to be that complex? Probably, since that function checks the cache, and if missed, runs a while routing within the companion container to get the results.
+"""
+
 from datetime import datetime
 from functools import cached_property
 from logging import getLogger
@@ -38,36 +61,45 @@ class R2RAccessor:
 
     @cached_property
     def latitude(self) -> float | None:
+        """Simple wrapper around :py:func:`~r2r_ctd.derived.get_latitude`"""
         return get_latitude(self._obj)
 
     @cached_property
     def longitude(self) -> float | None:
+        """Simple wrapper around :py:func:`~r2r_ctd.derived.get_longitude`"""
         return get_longitude(self._obj)
 
     @cached_property
     def lon_lat_valid(self) -> bool:
+        """Caching wrapper around :py:func:`~r2r_ctd.checks.check_lon_lat_valid`"""
         return get_or_write_check(self._obj, "lon_lat_valid", check_lon_lat_valid)
 
     @cached_property
     def time(self) -> datetime | None:
+        """Simple wrapper around :py:func:`~r2r_ctd.derived.get_time`"""
         return get_time(self._obj)
 
     @cached_property
     def time_valid(self) -> bool:
+        """Caching wrapper around :py:func:`~r2r_ctd.checks.check_time_valid`"""
         return get_or_write_check(self._obj, "date_valid", check_time_valid)
 
     @cached_property
     def all_three_files(self) -> bool:
+        """Caching wrapper around :py:func:`~r2r_ctd.checks.check_three_files`"""
         return get_or_write_check(self._obj, "three_files", check_three_files)
 
     def time_in(self, dt_range: Interval) -> bool:
+        """Caching wrapper around :py:func:`~r2r_ctd.checks.check_dt`"""
         return get_or_write_check(self._obj, "date_range", check_dt, dtrange=dt_range)
 
     def lon_lat_in(self, bbox: BBox) -> bool:
+        """Caching wrapper around :py:func:`~r2r_ctd.checks.check_lon_lat`"""
         return get_or_write_check(self._obj, "lon_lat_range", check_lon_lat, bbox=bbox)
 
     @cached_property
     def con_report(self) -> str | None:
+        """Caching wrapper around :py:func:`~r2r_ctd.derived.make_con_report`"""
         con_report = get_or_write_derived_file(self._obj, "con_report", make_con_report)
         if con_report:
             return con_report.item()
@@ -76,6 +108,10 @@ class R2RAccessor:
 
     @cached_property
     def cnv_24hz(self) -> str | None:
+        """Caching wrapper around :py:func:`~r2r_ctd.derived.make_cnvs`
+
+        Will generate the :py:meth:`cnv_1db` as a side effect if not already done.
+        """
         if self.con_report is None:
             return None
 
@@ -87,6 +123,10 @@ class R2RAccessor:
 
     @cached_property
     def cnv_1db(self) -> str | None:
+        """Caching wrapper around :py:func:`~r2r_ctd.derived.make_cnvs`
+
+        Will generate the :py:meth:`cnv_24hz` as a side effect if not already done.
+        """
         if self.con_report is None:
             return None
 
@@ -132,6 +172,7 @@ class R2RAccessor:
         return False
 
     def write_con_report(self, breakout: "Breakout") -> None:
+        """Actually write the configuration report files to disk."""
         if self.con_report is None:
             return None
 
@@ -143,6 +184,7 @@ class R2RAccessor:
     def write_cnv(
         self, breakout: "Breakout", cnv: Literal["cnv_24hz", "cnv_1db"]
     ) -> None:
+        """Actually write the derived cnv files to disk."""
         cnv_contents = getattr(self, cnv)
         if cnv_contents is None:
             return None
