@@ -1,0 +1,10 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+authors:
+- family-names: "Barna"
+  given-names: "Andrew"
+  orcid: "https://orcid.org/0000-0002-5203-8954"
+title: "r2r_ctd tools for doing some basic QA routines on CTD data"
+abstract: "A toolkit for doing some QA with raw SeaBird CTD data, also produces some derived products for quick evaluation."
+license: "BSD-3-Clause"
+repository-code: "https://github.com/cchdo/r2r_ctd"
