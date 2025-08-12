@@ -1,3 +1,8 @@
+"""Functions for manipulating the state netCDF files and getting paths for derived files.
+
+Anything that modifies the state must go though functions contained here.
+This module also contains a bunch of functions that calculate where output files should go."""
+
 from collections.abc import Callable
 from logging import getLogger
 from pathlib import Path
@@ -13,6 +18,8 @@ if TYPE_CHECKING:
     from r2r_ctd.breakout import Breakout
 
 R2R_QC_VARNAME = "r2r_qc"
+"""Variable name used within the state netCDF files a an attribute key-value container.
+This is done to keep all the qa result contained instead of e.g. prefixing attribute names and having everything as a global attribute."""
 
 logger = getLogger(__name__)
 
@@ -44,6 +51,10 @@ class CheckFunc(Protocol):
 
 
 def write_ds_r2r(ds: xr.Dataset) -> None:
+    """Given a Dataset, serialize it to the path contained on the ```__path``` global attribute.
+
+    The ``__path`` attribute is not serialized, but rather added by the :py:func:`initialize_or_get_state` on read in.
+    """
     path = ds.attrs.pop("__path")
     ds.to_netcdf(path, mode="a")
     logger.debug(f"State saved to {path}")
@@ -51,6 +62,7 @@ def write_ds_r2r(ds: xr.Dataset) -> None:
 
 
 def get_state_path(breakout: "Breakout", hex_path: Path) -> Path:
+    """Given a breakout and hex_path in that breakout, calculate what the state path would be"""
     nc_dir = breakout.path / "proc" / "nc"
 
     if not nc_dir.exists():
@@ -63,6 +75,7 @@ def get_state_path(breakout: "Breakout", hex_path: Path) -> Path:
 
 
 def get_qa_dir(breakout: "Breakout") -> Path:
+    """Determine the directory path used for QA output files, creating it if necessary."""
     qa_dir = breakout.path / "proc" / "qa"
     qa_dir.mkdir(exist_ok=True, parents=True)
 
@@ -70,11 +83,19 @@ def get_qa_dir(breakout: "Breakout") -> Path:
 
 
 def get_xml_qa_path(breakout: "Breakout") -> Path:
+    """Get the path of where to write the QA XML report.
+
+    This is the same name as the template, but with xml instead of xmlt"""
     xml_qa_name = breakout.qa_template_path.with_suffix(".xml").name
     return get_qa_dir(breakout) / xml_qa_name
 
 
 def get_geoCSV_path(breakout: "Breakout") -> Path:
+    """Get the path of where to write the geoCSV file.
+
+    This is the same name as the XML template, but with _ctd_metdata.geoCSV ``_ctd_metdata.geoCSV`` suffix
+    rather than ``_qa.2.0.xmlt``.
+    """
     geocsv_name = breakout.qa_template_path.name.replace(
         "_qa.2.0.xmlt",
         "_ctd_metdata.geoCSV",
@@ -84,6 +105,7 @@ def get_geoCSV_path(breakout: "Breakout") -> Path:
 
 
 def get_config_path(breakout: "Breakout") -> Path:
+    """Get the directory for writing the seabird configuration report files, creating it if necessary"""
     config_path = get_qa_dir(breakout) / "config"
     config_path.mkdir(exist_ok=True, parents=True)
 
@@ -91,6 +113,7 @@ def get_config_path(breakout: "Breakout") -> Path:
 
 
 def get_product_path(breakout: "Breakout") -> Path:
+    """Get the directory to write the cnv product files to, creating it if necessary."""
     product_dir = breakout.path / "proc" / "products" / "r2rctd"
     product_dir.mkdir(exist_ok=True, parents=True)
 
@@ -98,6 +121,9 @@ def get_product_path(breakout: "Breakout") -> Path:
 
 
 def get_filename(da: xr.DataArray) -> str:
+    """Gets the ``filename`` attribute of a DataArray object that represents a file.
+
+    This is mostly use as sugar for type casting to a string"""
     return cast("str", da.attrs["filename"])
 
 
@@ -132,6 +158,17 @@ def initialize_or_get_state(breakout: "Breakout", hex_path: Path) -> xr.Dataset:
 
 
 def get_or_write_derived_file(ds: xr.Dataset, key: str, func: Callable, **kwargs):
+    """Get a derived file either from the state, or from the result of the callable func.
+
+    This function is used to store create and store the instrument configuration reports and cnv files.
+    The callable ``func`` will be passed the dataset ``ds`` as the first argument and any extra ``kwargs``.
+    The ``ds`` will be checked for ``key`` before ``func`` is called and if present, those contents will be returned and ``func`` will not be called.
+
+    If ``func`` returns a dictionary mapping of keys to DataArrays, then ``key`` must be one of the keys in that dict.
+    All keys in the mapping will be stored on ds.
+
+    This function also checks if the callable raises an :py:class:`InvalidSBEFileError` and also skips calling ``func`` returning None instead.
+    """
     filename = ""
     if "hex" in ds:
         filename = ds.hex.attrs["filename"]
@@ -166,6 +203,15 @@ def get_or_write_derived_file(ds: xr.Dataset, key: str, func: Callable, **kwargs
 
 
 def get_or_write_check(ds: xr.Dataset, key: str, func: CheckFunc, **kwargs) -> bool:
+    """Get or determine and write the boolean result of `func`
+
+    The callable ``func`` will be passed the dataset ``ds`` as the first argument and any extra ``kwargs``.
+    ``func`` must return a boolean value which will then be stored on ``ds`` in the attributes a special variable :py:obj:`R2R_QC_VARNAME`.
+    This object simply serves as a container for these results.
+
+    .. note::
+        netCDF doesn't have a boolean data type, so these checks are stored as literal 1 or 0 inside the state file.
+    """
     filename = ""
     if "hex" in ds:
         filename = ds.hex.attrs["filename"]
