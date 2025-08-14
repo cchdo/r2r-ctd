@@ -50,7 +50,11 @@ import docker
 from docker.models.containers import Container
 from odf.sbe.io import string_loader
 
-from r2r_ctd.exceptions import InvalidXMLCONError, WineDebuggerEnteredError
+from r2r_ctd.exceptions import (
+    InvalidXMLCONError,
+    WineDebuggerEnteredError,
+    WineTimeoutError,
+)
 from r2r_ctd.sbe import batch
 from r2r_ctd.state import NamedBytes
 
@@ -220,7 +224,9 @@ export WINEPREFIX=/.wine
 # if a previous run fails, some state is recorded that prevents a clean start again (via UI popup) , so we just remove that
 rm -rf /.wine/drive_c/users/abc/AppData/Local/Sea-Bird/
 cd /.wine/drive_c/proc/${TMPDIR_R2R}/in;
-wine "/.wine/drive_c/Program Files (x86)/Sea-Bird/SBEDataProcessing-Win32/SBEBatch.exe" batch.txt ${R2R_HEXNAME} ../out ${R2R_XMLCON} ../out/${R2R_TMPCNV} -s
+timeout ${R2R_TIMEOUT} wine "/.wine/drive_c/Program Files (x86)/Sea-Bird/SBEDataProcessing-Win32/SBEBatch.exe" batch.txt ${R2R_HEXNAME} ../out ${R2R_XMLCON} ../out/${R2R_TMPCNV} -s
+# if the above process times out, print something to standard error we can check for
+[ $? -eq 124 ] && echo "SBEBatch.exe TIMEOUT" 1>&2 && exit 1;
 exit 0;
 """
 """Shell script that runs SBEBatch.exe
@@ -242,11 +248,11 @@ def attempts(tires=3):
             while attempt <= tires:
                 try:
                     return func(*args, **kwargs)
-                except WineDebuggerEnteredError as err:
-                    logger.critical(
-                        "Wine appears to have entered the debugger, retrying"
-                    )
+                except (WineTimeoutError, WineDebuggerEnteredError) as err:
+                    logger.critical(f"The wine process as encountered a problem: {err}")
                     attempt += 1
+                    if attempt > tires:
+                        raise RuntimeError("Max retries exceed") from err
                     logger.critical(f"Attempt {attempt} of {tires}")
                     logger.critical(f"Restarting {container.name}")
                     container.restart()
@@ -315,6 +321,7 @@ def run_sbebatch(
                 "R2R_HEXNAME": hex.name,
                 "R2R_XMLCON": xmlcon.name,
                 "R2R_TMPCNV": hex_path.with_suffix(".cnv"),
+                "R2R_TIMEOUT": 300,  # seconds
             },
         )
         for stdout, stderr in batch_logs.output:
@@ -322,7 +329,11 @@ def run_sbebatch(
                 msg = stderr.decode().strip()
                 logger.debug(f"{container.name} - {msg}")
                 if "starting debugger" in msg:
-                    raise WineDebuggerEnteredError("wine crashed?")
+                    raise WineDebuggerEnteredError("wine has entered debugger")
+                if "SBEBatch.exe TIMEOUT" in msg:
+                    raise WineTimeoutError(
+                        "SBEBatch.exe did not finish in the amount of time allowed"
+                    )
             if stdout is not None:
                 logger.info(f"{container.name} - {stdout.decode().strip()}")
 

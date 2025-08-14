@@ -11,3 +11,7 @@ class InvalidXMLCONError(InvalidSBEFileError):
 
 class WineDebuggerEnteredError(RuntimeError):
     """Exception raised when the debugger launched message appears within the container logs"""
+
+
+class WineTimeoutError(RuntimeError):
+    """Exception raised when the SBEBatch.exe process does not finish in the allowed amount of time"""
