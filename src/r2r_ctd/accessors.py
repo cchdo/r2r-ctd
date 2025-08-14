@@ -115,6 +115,9 @@ class R2RAccessor:
         if self.con_report is None:
             return None
 
+        if self.all_three_files is False:
+            return None
+
         cnv_24hz = get_or_write_derived_file(self._obj, "cnv_24hz", make_cnvs)
         if cnv_24hz:
             return cnv_24hz.item()
@@ -128,6 +131,9 @@ class R2RAccessor:
         Will generate the :py:meth:`cnv_24hz` as a side effect if not already done.
         """
         if self.con_report is None:
+            return None
+
+        if self.all_three_files is False:
             return None
 
         cnv_1db = get_or_write_derived_file(self._obj, "cnv_1db", make_cnvs)
