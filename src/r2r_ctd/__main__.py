@@ -70,13 +70,13 @@ def qa(gen_cnvs: bool, paths: tuple[Path, ...]):
         for station in breakout:
             station.r2r.write_con_report(breakout)
 
-        # write the cnv files
+        write_xml_qa_report(breakout, ra.certificate)
+
+        # write the cnv files if asked
         if gen_cnvs:
             for station in breakout:
                 station.r2r.write_cnv(breakout, "cnv_24hz")
                 station.r2r.write_cnv(breakout, "cnv_1db")
-
-        write_xml_qa_report(breakout, ra.certificate)
 
 
 if __name__ == "__main__":
