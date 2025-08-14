@@ -267,7 +267,7 @@ def attempts(tires=3):
     return decorator
 
 
-@attempts(3)
+@attempts(5)
 def run_sbebatch(
     hex: NamedBytes,
     xmlcon: NamedBytes,
