@@ -20,6 +20,11 @@ dependencies = [
 [project.scripts]
 r2r-ctd = "r2r_ctd.__main__:cli"
 
+[project.optional-dependencies]
+maps = [
+    "folium>=0.20.0",
+]
+
 [build-system]
 requires = ["setuptools>=68", "setuptools_scm>=7"]
 build-backend = "setuptools.build_meta"
