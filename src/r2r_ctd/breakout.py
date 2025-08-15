@@ -35,6 +35,46 @@ class BBox(NamedTuple):
     e: float
     n: float
 
+    @property
+    def __geo_interface__(self):
+        if self.w > self.e:
+            return {
+                "type": "MultiPolygon",
+                "coordinates": (
+                    (
+                        (
+                            (self.w, self.s),
+                            (180, self.s),
+                            (180, self.n),
+                            (self.w, self.n),
+                            (self.w, self.s),
+                        ),
+                    ),
+                    (
+                        (
+                            (-180, self.s),
+                            (self.e, self.s),
+                            (self.e, self.n),
+                            (-180, self.n),
+                            (-180, self.s),
+                        ),
+                    ),
+                ),
+            }
+
+        return {
+            "type": "Polygon",
+            "coordinates": (
+                (
+                    (self.w, self.s),
+                    (self.e, self.s),
+                    (self.e, self.n),
+                    (self.w, self.n),
+                    (self.w, self.s),
+                ),
+            ),
+        }
+
     def contains(self, lon: float, lat: float) -> bool:
         """given a lon/lat pair, determine if it is inside the bounding box represented by this instance"""
         if lat < self.s:
@@ -82,6 +122,26 @@ class Breakout:
 
     path: Path
     """Path to the breakout itself, this set on instantiating a Breakout"""
+
+    @property
+    def __geo_interface__(self):
+        if self.bbox is None:
+            return
+        return {
+            "type": "Feature",
+            "geometry": self.bbox.__geo_interface__,
+            "properties": {
+                "cruise_id": self.cruise_id,
+                "fileset_id": self.fileset_id,
+                "manifest_ok": self.manifest_ok,
+                "start_date": f"{self.temporal_bounds.dtstart:%Y-%m-%d}"
+                if self.temporal_bounds
+                else "",
+                "end_date": f"{self.temporal_bounds.dtend:%Y-%m-%d}"
+                if self.temporal_bounds
+                else "",
+            },
+        }
 
     @property
     def manifest_path(self) -> Path:
