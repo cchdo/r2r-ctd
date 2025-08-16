@@ -120,6 +120,18 @@ def get_product_path(breakout: "Breakout") -> Path:
     return product_dir
 
 
+def get_map_path(breakout: "Breakout") -> Path:
+    """Get the path to write the map file to, creating parent directories if necessary."""
+    map_name = breakout.qa_template_path.name.replace(
+        "_qa.2.0.xmlt",
+        "_qa_map.html",
+    )
+    map_html = breakout.path / "proc" / map_name
+    map_html.parent.mkdir(exist_ok=True, parents=True)
+
+    return map_html
+
+
 def get_filename(da: xr.DataArray) -> str:
     """Gets the ``filename`` attribute of a DataArray object that represents a file.
 

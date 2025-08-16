@@ -59,6 +59,18 @@ class R2RAccessor:
     def __init__(self, xarray_obj: xr.Dataset):
         self._obj = xarray_obj
 
+    @property
+    def __geo_interface__(self):
+        return {
+            "type": "Point",
+            "coordinates": (self.longitude, self.latitude),
+        }
+
+    @property
+    def name(self):
+        """Get the "name" of this station, basically the hex file name with the .hex removed"""
+        return get_filename(self._obj.hex).removesuffix(".hex")
+
     @cached_property
     def latitude(self) -> float | None:
         """Simple wrapper around :py:func:`~r2r_ctd.derived.get_latitude`"""

@@ -35,6 +35,46 @@ class BBox(NamedTuple):
     e: float
     n: float
 
+    @property
+    def __geo_interface__(self):
+        if self.w > self.e:
+            return {
+                "type": "MultiPolygon",
+                "coordinates": (
+                    (
+                        (
+                            (self.w, self.s),
+                            (180, self.s),
+                            (180, self.n),
+                            (self.w, self.n),
+                            (self.w, self.s),
+                        ),
+                    ),
+                    (
+                        (
+                            (-180, self.s),
+                            (self.e, self.s),
+                            (self.e, self.n),
+                            (-180, self.n),
+                            (-180, self.s),
+                        ),
+                    ),
+                ),
+            }
+
+        return {
+            "type": "Polygon",
+            "coordinates": (
+                (
+                    (self.w, self.s),
+                    (self.e, self.s),
+                    (self.e, self.n),
+                    (self.w, self.n),
+                    (self.w, self.s),
+                ),
+            ),
+        }
+
     def contains(self, lon: float, lat: float) -> bool:
         """given a lon/lat pair, determine if it is inside the bounding box represented by this instance"""
         if lat < self.s:

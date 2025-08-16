@@ -141,6 +141,21 @@ def date_range(
     )
 
 
+def boolean_span_formatter(tf: bool) -> str:
+    """Format a boolean with html span element that colors green/red for true/false"""
+    return f"<span style='color: {'green' if tf else 'red'}'>{tf}</span>"
+
+
+RATING_CSS_MAP = {
+    "G": "green",
+    "Y": "yellow",
+    "R": "red",
+    "X": "black",
+    "N": "grey",
+}
+"""Mapping between the QA letter codes and css color name"""
+
+
 @dataclass
 class ResultAggregator:
     """Dataclass which iterates though all the stations their tests and aggregates their results and generates the "info blocks".
@@ -150,6 +165,100 @@ class ResultAggregator:
     """
 
     breakout: Breakout
+
+    def geo_breakout_feature(self):
+        """If the breakout has a valid bounding box, generate the GeoJSON feature to plot on a map"""
+        if self.breakout.bbox is None:
+            return None
+
+        breakout_geometry = self.breakout.bbox.__geo_interface__
+        date_start = (
+            f"{self.breakout.temporal_bounds.dtstart:%Y-%m-%d}"
+            if self.breakout.temporal_bounds is not None
+            else ""
+        )
+        date_end = (
+            f"{self.breakout.temporal_bounds.dtend:%Y-%m-%d}"
+            if self.breakout.temporal_bounds is not None
+            else ""
+        )
+        not_on_map = (
+            f"<li>{station.r2r.name}</li>"
+            for station in self.breakout
+            if None in (station.r2r.longitude, station.r2r.latitude)
+        )
+        return {
+            "type": "FeatureCollection",
+            "features": [
+                {
+                    "type": "Feature",
+                    "geometry": breakout_geometry,
+                    "properties": {
+                        "cruise_id": self.breakout.cruise_id,
+                        "fileset_id": self.breakout.fileset_id,
+                        "rating": RATING_CSS_MAP[self.rating],
+                        "manifest_ok": boolean_span_formatter(
+                            self.breakout.manifest_ok
+                        ),
+                        "start_date": date_start,
+                        "end_date": date_end,
+                        "stations_not_on_map": f"<ul>{''.join(not_on_map) or '<li>All QAed stations on map</li>'}</ul>",
+                    },
+                }
+            ],
+        }
+
+    def geo_station_feature(self):
+        """Generate the GeoJSON feature collection with a feature for each station that has lon/lat coordinates to plot on a map"""
+        features = []
+        for station in self.breakout:
+            if None in (station.r2r.longitude, station.r2r.latitude):
+                continue
+            station_geometry = station.r2r.__geo_interface__
+            station_time = (
+                f"{station.r2r.time:%Y-%m-%d %H:%M:%S}" if station.r2r.time else "None"
+            )
+
+            marker_color = (
+                "green"
+                if (
+                    station.r2r.all_three_files
+                    and station.r2r.lon_lat_valid
+                    and station.r2r.time_valid
+                    and station.r2r.lon_lat_in(self.breakout.bbox)
+                    and station.r2r.time_in(self.breakout.temporal_bounds)
+                )
+                else "red"
+            )
+
+            features.append(
+                {
+                    "type": "Feature",
+                    "geometry": station_geometry,
+                    "properties": {
+                        "name": station.r2r.name,
+                        "time": station_time,
+                        "all_three_files": boolean_span_formatter(
+                            station.r2r.all_three_files
+                        ),
+                        "lon_lat_valid": boolean_span_formatter(
+                            station.r2r.lon_lat_valid
+                        ),
+                        "time_valid": boolean_span_formatter(station.r2r.time_valid),
+                        "lon_lat_in": boolean_span_formatter(
+                            station.r2r.lon_lat_in(self.breakout.bbox)
+                        ),
+                        "time_in": boolean_span_formatter(
+                            station.r2r.time_in(self.breakout.temporal_bounds)
+                        ),
+                        "bottles_fired": boolean_span_formatter(
+                            station.r2r.bottles_fired
+                        ),
+                        "marker_color": marker_color,
+                    },
+                }
+            )
+        return {"type": "FeatureCollection", "features": features}
 
     @cached_property
     def presence_of_all_files(self) -> int:
