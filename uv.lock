@@ -619,14 +619,10 @@ source = { editable = "." }
 dependencies = [
     { name = "click" },
     { name = "docker" },
+    { name = "folium" },
     { name = "lxml" },
     { name = "odf-sbe" },
     { name = "rich" },
-]
-
-[package.optional-dependencies]
-maps = [
-    { name = "folium" },
 ]
 
 [package.dev-dependencies]
@@ -647,12 +643,11 @@ dev = [
 requires-dist = [
     { name = "click", specifier = ">=8.2.0" },
     { name = "docker", specifier = ">=7.1.0" },
-    { name = "folium", marker = "extra == 'maps'", specifier = ">=0.20.0" },
+    { name = "folium", specifier = ">=0.20.0" },
     { name = "lxml", specifier = ">=5.4.0" },
     { name = "odf-sbe", specifier = ">=0.2.1" },
     { name = "rich", specifier = ">=14.0.0" },
 ]
-provides-extras = ["maps"]
 
 [package.metadata.requires-dev]
 dev = [
