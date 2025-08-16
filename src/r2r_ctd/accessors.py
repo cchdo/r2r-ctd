@@ -62,34 +62,9 @@ class R2RAccessor:
     @property
     def __geo_interface__(self):
         return {
-            "type": "Feature",
-            "geometry": {
-                "type": "Point",
-                "coordinates": (self.longitude, self.latitude),
-            },
-            "properties": {
-                "name": self.name,
-                "time": f"{self.time:%Y-%m-%d %H:%M:%S}" if self.time else "None",
-                "all_three_files": f"<span style='color: {'green' if self.all_three_files else 'red'}'>{self.all_three_files}</span>",
-                "lon_lat_valid": f"<span style='color: {'green' if self.lon_lat_valid else 'red'}'>{self.lon_lat_valid}</span>",
-                "time_valid": f"<span style='color: {'green' if self.time_valid else 'red'}'>{self.time_valid}</span>",
-                "bottles_fired": f"<span style='color: {'green' if self.bottles_fired else 'red'}'>{self.bottles_fired}</span>",
-            },
+            "type": "Point",
+            "coordinates": (self.longitude, self.latitude),
         }
-
-    def get_marker_color(self, bbox: BBox | None, interval: Interval | None):
-        # warning, duplicated logic?
-        if bbox is None or interval is None:
-            return "black"
-        if not self.lon_lat_valid or not self.time_valid:
-            return "grey"
-        if not self.all_three_files:
-            return "red"
-        if not self.lon_lat_in(bbox):
-            return "red"
-        if not self.time_in(interval):
-            return "red"
-        return "green"
 
     @property
     def name(self):

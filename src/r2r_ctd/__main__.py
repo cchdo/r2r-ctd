@@ -72,7 +72,7 @@ def qa(gen_cnvs: bool, paths: tuple[Path, ...]):
             station.r2r.write_con_report(breakout)
 
         write_xml_qa_report(breakout, ra.certificate)
-        make_maps(breakout, ra)
+        make_maps(ra)
 
         # write the cnv files if asked
         if gen_cnvs:

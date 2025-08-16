@@ -124,26 +124,6 @@ class Breakout:
     """Path to the breakout itself, this set on instantiating a Breakout"""
 
     @property
-    def __geo_interface__(self):
-        if self.bbox is None:
-            return
-        return {
-            "type": "Feature",
-            "geometry": self.bbox.__geo_interface__,
-            "properties": {
-                "cruise_id": self.cruise_id,
-                "fileset_id": self.fileset_id,
-                "manifest_ok": self.manifest_ok,
-                "start_date": f"{self.temporal_bounds.dtstart:%Y-%m-%d}"
-                if self.temporal_bounds
-                else "",
-                "end_date": f"{self.temporal_bounds.dtend:%Y-%m-%d}"
-                if self.temporal_bounds
-                else "",
-            },
-        }
-
-    @property
     def manifest_path(self) -> Path:
         """The Path of the manifest-md5.txt file in this breakout"""
         return self.path / "manifest-md5.txt"
