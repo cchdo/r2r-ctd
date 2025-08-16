@@ -21,7 +21,7 @@ from rich.logging import RichHandler
 
 from r2r_ctd.breakout import Breakout
 from r2r_ctd.docker_ctl import test_docker as _test_docker
-from r2r_ctd.maps import make_maps
+from r2r_ctd.maps import make_map
 from r2r_ctd.reporting import (
     ResultAggregator,
     write_xml_qa_report,
@@ -72,7 +72,7 @@ def qa(gen_cnvs: bool, paths: tuple[Path, ...]):
             station.r2r.write_con_report(breakout)
 
         write_xml_qa_report(breakout, ra.certificate)
-        make_maps(ra)
+        make_map(ra)
 
         # write the cnv files if asked
         if gen_cnvs:

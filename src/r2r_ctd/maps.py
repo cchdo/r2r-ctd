@@ -1,3 +1,5 @@
+"""Functions for making maps to help QA work"""
+
 from logging import getLogger
 
 import folium
@@ -8,7 +10,10 @@ from r2r_ctd.state import get_map_path
 logger = getLogger(__name__)
 
 
-def make_maps(results: ResultAggregator):
+def make_map(results: ResultAggregator):
+    """Write the results to a map using folium.
+
+    Useful for seeing what stations failed and what the tested bounding box was"""
     m = folium.Map()
 
     breakout_fields = [

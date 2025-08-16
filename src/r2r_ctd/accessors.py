@@ -68,6 +68,7 @@ class R2RAccessor:
 
     @property
     def name(self):
+        """Get the "name" of this station, basically the hex file name with the .hex removed"""
         return get_filename(self._obj.hex).removesuffix(".hex")
 
     @cached_property

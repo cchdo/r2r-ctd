@@ -142,6 +142,7 @@ def date_range(
 
 
 def boolean_span_formatter(tf: bool) -> str:
+    """Format a boolean with html span element that colors green/red for true/false"""
     return f"<span style='color: {'green' if tf else 'red'}'>{tf}</span>"
 
 
@@ -152,6 +153,7 @@ RATING_CSS_MAP = {
     "X": "black",
     "N": "grey",
 }
+"""Mapping between the QA letter codes and css color name"""
 
 
 @dataclass
@@ -165,6 +167,7 @@ class ResultAggregator:
     breakout: Breakout
 
     def geo_breakout_feature(self):
+        """If the breakout has a valid bounding box, generate the GeoJSON feature to plot on a map"""
         if self.breakout.bbox is None:
             return None
 
@@ -206,6 +209,7 @@ class ResultAggregator:
         }
 
     def geo_station_feature(self):
+        """Generate the GeoJSON feature collection with a feature for each station that has lon/lat coordinates to plot on a map"""
         features = []
         for station in self.breakout:
             if None in (station.r2r.longitude, station.r2r.latitude):
