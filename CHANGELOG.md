@@ -6,6 +6,7 @@
 * fixed a bug where the wine retry decorator would retry forever
 * Increase the cnv generation attempts from 3 to 5
 * Add HTML/leaflet based map output
+* If no files to test (empty breakout), set overall score to black
 
 ## v2025.08.0 (2025-08-11)
 * Initial release.

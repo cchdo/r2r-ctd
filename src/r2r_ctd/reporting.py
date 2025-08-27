@@ -264,7 +264,7 @@ class ResultAggregator:
     def presence_of_all_files(self) -> int:
         """Iterate though the stations and count how many have :py:meth:`~r2r_ctd.accessors.R2RAccessor.all_three_files`"""
         results = [data.r2r.all_three_files for data in self.breakout]
-        return int((results.count(True) / len(results)) * 100)
+        return int((results.count(True) / len(results)) * 100) if results else 100
 
     @property
     def presence_of_all_files_rating(self) -> Literal["G", "R"]:
@@ -284,18 +284,20 @@ class ResultAggregator:
     def lon_lat_nav_valid(self) -> int:
         """Iterate though the stations and count how many are :py:meth:`~r2r_ctd.accessors.R2RAccessor.lon_lat_valid`"""
         results = [data.r2r.lon_lat_valid for data in self.breakout]
-        return int((results.count(True) / len(results)) * 100)
+        return int((results.count(True) / len(results)) * 100) if results else 100
 
     @cached_property
     def lon_lat_nav_range(self) -> int:
         """Iterate though the stations and count how many are :py:meth:`~r2r_ctd.accessors.R2RAccessor.lon_lat_in` the :py:meth:`~r2r_ctd.breakout.Breakout.bbox`"""
         results = [data.r2r.lon_lat_in(self.breakout.bbox) for data in self.breakout]
-        return int((results.count(True) / len(results)) * 100)
+        return int((results.count(True) / len(results)) * 100) if results else 100
 
     @property
     def lon_lat_nav_ranges_rating(self) -> Literal["G", "Y", "R", "N", "X"]:
         """Calculate the rating string for the nav bounds test, also needs to check if all of the stations are missing nav or if the breakout is missing bounds."""
-        if self.lon_lat_nav_valid == 0:  # no readable positions to test
+        if (
+            self.lon_lat_nav_valid == 0 or len(list(self.breakout)) == 0
+        ):  # no readable positions to test
             return "X"  # black
 
         if self.breakout.bbox is None:
@@ -315,7 +317,7 @@ class ResultAggregator:
     def time_valid(self) -> int:
         """Iterate though the stations and count how many are :py:meth:`~r2r_ctd.accessors.R2RAccessor.time_valid`"""
         results = [data.r2r.time_valid for data in self.breakout]
-        return int((results.count(True) / len(results)) * 100)
+        return int((results.count(True) / len(results)) * 100) if results else 100
 
     @cached_property
     def time_range(self) -> int:
@@ -323,12 +325,14 @@ class ResultAggregator:
         results = [
             data.r2r.time_in(self.breakout.temporal_bounds) for data in self.breakout
         ]
-        return int((results.count(True) / len(results)) * 100)
+        return int((results.count(True) / len(results)) * 100) if results else 100
 
     @property
     def time_rating(self) -> Literal["G", "Y", "R", "N", "X"]:
         """Calculate the rating string for the temporal bounds test, also needs to check if all of the stations are missing time or if the breakout is missing bounds."""
-        if self.time_valid == 0:  # no readable dates to test
+        if (
+            self.time_valid == 0 or len(list(self.breakout)) == 0
+        ):  # no readable dates to test
             return "X"  # black
 
         if self.breakout.temporal_bounds is None:
