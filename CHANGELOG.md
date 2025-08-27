@@ -7,6 +7,7 @@
 * Increase the cnv generation attempts from 3 to 5
 * Add HTML/leaflet based map output
 * If no files to test (empty breakout), set overall score to black
+* Add runtime control of how to check the payload "data" directory against the manifest
 
 ## v2025.08.0 (2025-08-11)
 * Initial release.

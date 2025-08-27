@@ -6,6 +6,7 @@ The other two classes: :py:class:`BBox` and :py:class:`Interval` are in here bec
 
 from dataclasses import dataclass
 from datetime import datetime, timedelta
+from enum import StrEnum, auto
 from functools import cached_property
 from hashlib import file_digest
 from logging import getLogger
@@ -105,6 +106,19 @@ class Interval(NamedTuple):
         return self.dtstart <= dt < self.dtend
 
 
+class PayloadStrictness(StrEnum):
+    """Strictness of how to validate the payload against the manifest
+
+    * "strict":  any files in the payload directory and not in the manifest cause the test to fail.
+    * "flex": a reasonable set of files in the payload directory and not in the manifest are ignored (.DS_Store files).
+    * "manifest": only files in the manifest are checked and others are ignored.
+    """
+
+    STRICT = auto()
+    FLEX = auto()
+    MANIFEST = auto()
+
+
 @dataclass
 class Breakout:
     """Convenience wrapper for manipulating the various Paths of the r2r breakout
@@ -123,6 +137,9 @@ class Breakout:
     path: Path
     """Path to the breakout itself, this set on instantiating a Breakout"""
 
+    payload: PayloadStrictness = PayloadStrictness.FLEX
+    """How strictly should the payload directory be validated"""
+
     @property
     def manifest_path(self) -> Path:
         """The Path of the manifest-md5.txt file in this breakout"""
@@ -132,6 +149,11 @@ class Breakout:
     def manifest(self) -> str:
         """Reads the manifest file as returns its contents as a string"""
         return self.manifest_path.read_text()
+
+    @property
+    def payload_path(self) -> Path:
+        """The path to the "data" directory assuming this is a BagIt bag"""
+        return self.path / "data"
 
     @cached_property
     def manifest_dict(self) -> dict[Path, str]:
@@ -150,14 +172,28 @@ class Breakout:
     def manifest_ok(self) -> bool:
         """Iterate over the manifest and check all the file hashes against the files in the breakout
 
-        In an actual bag-it bag, it would be an error for extra stuff to be in the data directory.
-        For example, a .DS_Store file if you looked at the breakout data directory on a mac.
-        This ignores anything not in the manifest file.
+        See :py:class:`PayloadStrictness` for how to control behavior.
 
         This returns True if both all the files in the manifest are present and their md5 hashes match.
 
         This is one of the checks that goes into the stoplight report.
         """
+        flex_files = {
+            ".DS_Store",
+        }
+        logger.info(f"Payload validation mode: {self.payload}")
+        err_message = "Files are in payload directory and not in manifest, breakout is likely invalid or corrupted"
+        for root, _, files in self.payload_path.walk():
+            paths = {root / file for file in files}
+            diff = paths - self.manifest_dict.keys()
+            if self.payload == "strict" and any(diff):
+                logger.critical(err_message)
+                return False
+
+            if self.payload == "flex" and not all(d.name in flex_files for d in diff):
+                logger.critical(err_message)
+                return False
+
         for file_path, manifest_hash in self.manifest_dict.items():
             if not file_path.exists():
                 return False

@@ -19,7 +19,7 @@ from pathlib import Path
 import click
 from rich.logging import RichHandler
 
-from r2r_ctd.breakout import Breakout
+from r2r_ctd.breakout import Breakout, PayloadStrictness
 from r2r_ctd.docker_ctl import test_docker as _test_docker
 from r2r_ctd.maps import make_map
 from r2r_ctd.reporting import (
@@ -58,10 +58,17 @@ def test_docker():
     type=click.Path(exists=True, file_okay=False, writable=True, path_type=Path),
 )
 @click.option("--gen-cnvs/--no-gen-cnvs", default=True)
-def qa(gen_cnvs: bool, paths: tuple[Path, ...]):
+@click.option(
+    "--payload-strictness",
+    show_default=True,
+    default=PayloadStrictness.FLEX,
+    type=click.Choice(PayloadStrictness, case_sensitive=False),
+    help=PayloadStrictness.__doc__,
+)
+def qa(gen_cnvs: bool, paths: tuple[Path, ...], payload_strictness: PayloadStrictness):
     """Run the QA routines on one or more directories."""
     for path in paths:
-        breakout = Breakout(path=path)
+        breakout = Breakout(path=path, payload=payload_strictness)
         ra = ResultAggregator(breakout)
 
         # write geoCSV
