@@ -67,6 +67,21 @@ A stricter mode was implemented that can be controlled by the --bag switch value
 * `flex`, a reasonable set of file names are allowed to exist in `/data` and not in the manifest-md5.txt, see [](#r2r_ctd.breakout.FLEX_FILES_OK) for the list of filenames allowed.
 * `manifest` reverts to the original behavior where only paths in the manifest-md5.txt are checked and any extra files in `/data` are ignored.
 
+The `flex` mode is the default.
+
+Example:
+
+Use strict bag mode:
+```
+uvx r2r-ctd qa --bag strict <path_to_breakout>
+```
+
+Use strict bag mode and skip generating CNV files:
+```
+uvx r2r-ctd qa --bag strict --no-gen-cnvs <path_to_breakout>
+```
+
+
 ## Breakout Structure
 When R2R receives data from a cruise it will be split up into separate collections called "breakouts".
 To be processed, the breakout is expected to be a directory with contents, not an archive such as a zip file.
@@ -114,8 +129,10 @@ Inside this `/proc` directory are several other directories:
     * A `*_ctd_metdata.geoCSV` file should be present.
     * A `/proc/qa/config` directory containing the instrument configuration report text files.
 * `/proc/products/r2rctd` will have all the generated cnv files (2 per cast) if the `--no-gen-cnvs` switch was not provided.
+* A `*_qa_map.html` file will be generated, open this in a browser to see the stations plotted, the bounding box and overall score color.
+  This map is created using [folium](https://python-visualization.github.io/folium/) and needs an internet connection to view (but not create).
 
-Presumably, the contents of `/proc` excluding the `nc` sub-directory can be rsync-ed back to the r2r server (without the `--delete` switch)
+Presumably, the contents of `/proc` excluding the `nc` sub-directory and map html can be rsync-ed back to the r2r server (without the `--delete` switch)
 
 ## Parallel Processing
 Since docker provides reasonable process isolation for the Windows based conversion tools, it is possible to have multiple container instances running the Seabird software in parallel.
