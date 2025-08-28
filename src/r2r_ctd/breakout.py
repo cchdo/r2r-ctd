@@ -189,15 +189,20 @@ class Breakout:
         for root, _, files in self.payload_path.walk():
             paths = {root / file for file in files}
             diff = paths - self.manifest_dict.keys()
+            message_diff = [p.relative_to(self.payload_path) for p in diff]
             if self.bag_strictness == "strict" and any(diff):
                 logger.critical(err_message)
+                logger.critical(f"Paths not in manifest: {message_diff}")
                 return False
 
             if self.bag_strictness == "flex" and not all(
                 d.name in flex_files_ok for d in diff
             ):
                 logger.critical(err_message)
+                logger.critical(f"Paths not in manifest: {message_diff}")
                 return False
+            if self.bag_strictness == "flex" and any(diff):
+                logger.info(f"Paths in /data ignored: {message_diff}")
 
         for file_path, manifest_hash in self.manifest_dict.items():
             if not file_path.exists():
