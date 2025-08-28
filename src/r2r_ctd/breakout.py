@@ -106,10 +106,10 @@ class Interval(NamedTuple):
         return self.dtstart <= dt < self.dtend
 
 
-class PayloadStrictness(StrEnum):
+class BagStrictness(StrEnum):
     """Strictness of how to validate the payload against the manifest
 
-    * "strict":  any files in the payload directory and not in the manifest cause the test to fail.
+    * "strict": Exactly follow BagIt spec, any files in the payload directory and not in the manifest cause the test to fail.
     * "flex": a reasonable set of files in the payload directory and not in the manifest are ignored (.DS_Store files).
     * "manifest": only files in the manifest are checked and others are ignored.
     """
@@ -137,7 +137,7 @@ class Breakout:
     path: Path
     """Path to the breakout itself, this set on instantiating a Breakout"""
 
-    payload: PayloadStrictness = PayloadStrictness.FLEX
+    bag_strictness: BagStrictness = BagStrictness.FLEX
     """How strictly should the payload directory be validated"""
 
     @property
@@ -181,16 +181,18 @@ class Breakout:
         flex_files = {
             ".DS_Store",
         }
-        logger.info(f"Payload validation mode: {self.payload}")
+        logger.info(f"Bag validation mode: {self.bag_strictness}")
         err_message = "Files are in payload directory and not in manifest, breakout is likely invalid or corrupted"
         for root, _, files in self.payload_path.walk():
             paths = {root / file for file in files}
             diff = paths - self.manifest_dict.keys()
-            if self.payload == "strict" and any(diff):
+            if self.bag_strictness == "strict" and any(diff):
                 logger.critical(err_message)
                 return False
 
-            if self.payload == "flex" and not all(d.name in flex_files for d in diff):
+            if self.bag_strictness == "flex" and not all(
+                d.name in flex_files for d in diff
+            ):
                 logger.critical(err_message)
                 return False
 
