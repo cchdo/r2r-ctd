@@ -20,6 +20,11 @@ from r2r_ctd.state import initialize_or_get_state
 
 logger = getLogger(__name__)
 
+FLEX_FILES_OK = """.DS_Store
+thumbs.db"""
+"""Filenames that, when in --bag flex validation mode, will not cause a fail"""
+# kept as a string so it prints in the documentation nicely
+
 
 class BBox(NamedTuple):
     """namedtuple to represent a geo bounding box
@@ -178,9 +183,7 @@ class Breakout:
 
         This is one of the checks that goes into the stoplight report.
         """
-        flex_files = {
-            ".DS_Store",
-        }
+        flex_files_ok = set(FLEX_FILES_OK.split("\n"))
         logger.info(f"Bag validation mode: {self.bag_strictness}")
         err_message = "Files are in payload directory and not in manifest, breakout is likely invalid or corrupted"
         for root, _, files in self.payload_path.walk():
@@ -191,7 +194,7 @@ class Breakout:
                 return False
 
             if self.bag_strictness == "flex" and not all(
-                d.name in flex_files for d in diff
+                d.name in flex_files_ok for d in diff
             ):
                 logger.critical(err_message)
                 return False

@@ -58,6 +58,15 @@ It is safe to kill ({kbd}`control` + {kbd}`c`) and restart the QA process when t
 The python program, not the docker container, the container should clean itself up when python exits.
 :::
 
+#### Control how closely to follow BagIt manifest validation spec `--bag`
+The first release version of this software would only check what is in the manifest-md5.txt file, that was found to not be as robust as we wanted.
+Some breakouts were found to have files, but empty manifests, this software would treat this as an empty breakout and... crash.
+A stricter mode was implemented that can be controlled by the --bag switch value:
+
+* `strict`, any files in the `/data` directory and not in the manifest-md5.txt cause the manifest OK test to report failure.
+* `flex`, a reasonable set of file names are allowed to exist in `/data` and not in the manifest-md5.txt, see [](#r2r_ctd.breakout.FLEX_FILES_OK) for the list of filenames allowed.
+* `manifest` reverts to the original behavior where only paths in the manifest-md5.txt are checked and any extra files in `/data` are ignored.
+
 ## Breakout Structure
 When R2R receives data from a cruise it will be split up into separate collections called "breakouts".
 To be processed, the breakout is expected to be a directory with contents, not an archive such as a zip file.
