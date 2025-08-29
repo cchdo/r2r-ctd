@@ -11,6 +11,7 @@ from dataclasses import dataclass
 from datetime import UTC, datetime
 from functools import cached_property
 from importlib.metadata import metadata, version
+from statistics import mean
 from typing import Literal
 
 from lxml.builder import ElementMaker
@@ -58,10 +59,10 @@ Time = E.time
 # XML QA Reference elements (links to files)
 Reference = E.reference
 
-ALL = 100
-"""Literal 100 representing 100 percent"""
-A_FEW = 50
-"""Literal 50 representing 50 percent, defines the cutoff between "yellow" and "red" ratings"""
+ALL = 1
+"""Literal representing 100 percent"""
+A_FEW = 0.5
+"""Literal representing 50 percent, defines the cutoff between "yellow" and "red" ratings in individual tests"""
 
 
 def overall_rating(rating: Literal["G", "R", "Y", "N", "X"]) -> _Element:
@@ -69,23 +70,23 @@ def overall_rating(rating: Literal["G", "R", "Y", "N", "X"]) -> _Element:
     return Rating(
         rating,
         description=(
-            "GREEN (G) if all tests GREEN, "
-            "RED (R) if at least one test RED, "
-            "else YELLOW (Y); "
-            "Gray(N) if no navigation was included in the distribution; "
-            "X if one or more tests could not be run."
+            "GREEN (G) if 100% of tests PASS, "
+            "YELLOW (Y) if more than 75% of individual tests PASS, "
+            "RED (R) if 75% or fewer of individual tests PASS; "
+            "GREY (N) if no navigation was included in the distribution; "
+            "BLACK (X) if one or more tests could not be run."
         ),
     )
 
 
-def file_presence(rating: Literal["G", "R"], test_result: str | int) -> _Element:
+def file_presence(rating: Literal["G", "R"], test_result: float) -> _Element:
     """Constructs the XML element representing the "Presence of All Raw Files" test result
 
     :param test_result: Should be a string or int in the interval (0, 100) representing the percentage of files that passed this test.
     """
     return Test(
         Rating(rating),
-        TestResult(str(test_result), uom="Percent"),
+        TestResult(f"{test_result:.0%}".removesuffix("%"), uom="Percent"),
         Bounds(Bound("100", name="MinimumPercentToPass", uom="Percent")),
         description="GREEN if 100% of the casts have .hex/.dat, .con and .hdr files; else RED",
         name="Presence of All Raw Files",
@@ -109,7 +110,7 @@ def valid_checksum(rating: Literal["G", "R"]) -> _Element:
 
 def lon_lat_range(
     rating: Literal["G", "R", "Y", "N", "X"],
-    test_result: str | int,
+    test_result: float,
 ) -> _Element:
     """Constructs the XML element representing the "Presence of All Raw Files" test result
 
@@ -117,7 +118,7 @@ def lon_lat_range(
     """
     return Test(
         Rating(rating),
-        TestResult(str(test_result), uom="Percent"),
+        TestResult(f"{test_result:.0%}".removesuffix("%"), uom="Percent"),
         Bounds(Bound("100", name="MinimumPercentToPass", uom="Percent")),
         name="Lat/Lon within NAV Ranges",
         description="GREEN if 100% of the profiles have lat/lon within cruise bounds; YELLOW if a few profiles without lat/lon; GRAY if no navigation was included in the distribution; else RED; BLACK if no readable lat/lon for all casts",
@@ -126,7 +127,7 @@ def lon_lat_range(
 
 def date_range(
     rating: Literal["G", "R", "Y", "N", "X"],
-    test_result: str | int,
+    test_result: float,
 ) -> _Element:
     """Constructs the XML element representing the "Dates within NAV Ranges" test result
 
@@ -134,7 +135,7 @@ def date_range(
     """
     return Test(
         Rating(rating),
-        TestResult(str(test_result), uom="Percent"),
+        TestResult(f"{test_result:.0%}".removesuffix("%"), uom="Percent"),
         Bounds(Bound("100", name="PercentFilesWithValidTemporalRange", uom="Percent")),
         name="Dates within NAV Ranges",
         description="GREEN if 100% of the profiles have Date within cruise bounds; YELLOW if a few profile times out of cruise bounds; GRAY if no navigation was provided in the distribution; else RED; BLACK if no readable dates to test",
@@ -261,10 +262,10 @@ class ResultAggregator:
         return {"type": "FeatureCollection", "features": features}
 
     @cached_property
-    def presence_of_all_files(self) -> int:
+    def presence_of_all_files(self) -> float:
         """Iterate though the stations and count how many have :py:meth:`~r2r_ctd.accessors.R2RAccessor.all_three_files`"""
         results = [data.r2r.all_three_files for data in self.breakout]
-        return int((results.count(True) / len(results)) * 100) if results else 100
+        return results.count(True) / len(results) if results else 1.0
 
     @property
     def presence_of_all_files_rating(self) -> Literal["G", "R"]:
@@ -281,16 +282,16 @@ class ResultAggregator:
         return "R"
 
     @cached_property
-    def lon_lat_nav_valid(self) -> int:
+    def lon_lat_nav_valid(self) -> float:
         """Iterate though the stations and count how many are :py:meth:`~r2r_ctd.accessors.R2RAccessor.lon_lat_valid`"""
         results = [data.r2r.lon_lat_valid for data in self.breakout]
-        return int((results.count(True) / len(results)) * 100) if results else 100
+        return results.count(True) / len(results) if results else 1.0
 
     @cached_property
-    def lon_lat_nav_range(self) -> int:
+    def lon_lat_nav_range(self) -> float:
         """Iterate though the stations and count how many are :py:meth:`~r2r_ctd.accessors.R2RAccessor.lon_lat_in` the :py:meth:`~r2r_ctd.breakout.Breakout.bbox`"""
         results = [data.r2r.lon_lat_in(self.breakout.bbox) for data in self.breakout]
-        return int((results.count(True) / len(results)) * 100) if results else 100
+        return results.count(True) / len(results) if results else 1.0
 
     @property
     def lon_lat_nav_ranges_rating(self) -> Literal["G", "Y", "R", "N", "X"]:
@@ -317,7 +318,7 @@ class ResultAggregator:
     def time_valid(self) -> int:
         """Iterate though the stations and count how many are :py:meth:`~r2r_ctd.accessors.R2RAccessor.time_valid`"""
         results = [data.r2r.time_valid for data in self.breakout]
-        return int((results.count(True) / len(results)) * 100) if results else 100
+        return int(results.count(True) / len(results)) if results else 1
 
     @cached_property
     def time_range(self) -> int:
@@ -325,7 +326,7 @@ class ResultAggregator:
         results = [
             data.r2r.time_in(self.breakout.temporal_bounds) for data in self.breakout
         ]
-        return int((results.count(True) / len(results)) * 100) if results else 100
+        return int(results.count(True) / len(results)) if results else 1
 
     @property
     def time_rating(self) -> Literal["G", "Y", "R", "N", "X"]:
@@ -350,35 +351,48 @@ class ResultAggregator:
 
     @property
     def rating(self):
-        """Aggregates the ratings from all the ``*_rating`` properties.
+        """Determines the overall color rating.
 
-        Takes the "worst" rating as the overall rating in the following order:
+        Color Codes:
 
-        * R (red)
-        * N (grey)
+        * R (Red)
+        * N (Grey)
         * X (Black)
         * Y (Yellow)
         * G (Green)
 
-        The red precedence over the black and yellow is from my interpretation of the rating string in the original XML:
+        If any of the test results are GREY or BLACK, those ratings override the score based rating.
 
-          GREEN (G) if all tests GREEN, RED (R) if at least one test RED, else YELLOW (Y); Gray(N) if no navigation was included in the distribution; X if one or more tests could not be run.
+          GREEN (G) if 100% of tests PASS, YELLOW (Y) if more than 75% of individual tests PASS, RED (R) if 75% or fewer of individual tests PASS; GREY (N) if no navigation was included in the distribution; BLACK (X) if one or more tests could not be run.
+
         """
+        YELLOW_CUTOFF_PERCENTAGE = 0.75
+
+        # ratings used to see if any tests are "Grey" or "Black"
         ratings = {
             self.presence_of_all_files_rating,
             self.valid_checksum_rating,
             self.lon_lat_nav_ranges_rating,
             self.time_rating,
         }
-        if "R" in ratings:
-            return "R"
+        test_result_average = mean(
+            [
+                self.presence_of_all_files,
+                self.breakout.manifest_ok,
+                self.lon_lat_nav_range,
+                self.time_range,
+            ]
+        )
         if "N" in ratings:
             return "N"
         if "X" in ratings:
             return "X"
-        if "Y" in ratings:
-            return "Y"
-        return "G"
+
+        if test_result_average == 1:
+            return "G"
+        elif test_result_average <= YELLOW_CUTOFF_PERCENTAGE:
+            return "R"
+        return "Y"
 
     @property
     def info_total_raw_files(self):
