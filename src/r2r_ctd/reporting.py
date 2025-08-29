@@ -315,18 +315,18 @@ class ResultAggregator:
         return "R"
 
     @cached_property
-    def time_valid(self) -> int:
+    def time_valid(self) -> float:
         """Iterate though the stations and count how many are :py:meth:`~r2r_ctd.accessors.R2RAccessor.time_valid`"""
         results = [data.r2r.time_valid for data in self.breakout]
-        return int(results.count(True) / len(results)) if results else 1
+        return results.count(True) / len(results) if results else 1
 
     @cached_property
-    def time_range(self) -> int:
+    def time_range(self) -> float:
         """Iterate though the stations and count how many are :py:meth:`~r2r_ctd.accessors.R2RAccessor.time_in` the :py:meth:`~r2r_ctd.breakout.Breakout.temporal_bounds`"""
         results = [
             data.r2r.time_in(self.breakout.temporal_bounds) for data in self.breakout
         ]
-        return int(results.count(True) / len(results)) if results else 1
+        return results.count(True) / len(results) if results else 1
 
     @property
     def time_rating(self) -> Literal["G", "Y", "R", "N", "X"]:
