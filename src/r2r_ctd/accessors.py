@@ -37,6 +37,8 @@ from r2r_ctd.checks import (
     check_time_valid,
 )
 from r2r_ctd.derived import (
+    get_con_report_sn,
+    get_hdr_sn,
     get_latitude,
     get_longitude,
     get_time,
@@ -119,15 +121,79 @@ class R2RAccessor:
         return None
 
     @cached_property
+    def con_temp_sn(self) -> str | None:
+        """Finds the first temperature sensor serial number in the xmlcon"""
+        if self.con_report is None:
+            return None
+        sns = get_con_report_sn(self.con_report, "Temperature")
+        return sns[0]
+
+    @cached_property
+    def hdr_temp_sn(self) -> str | None:
+        """Finds the temperature sensor serial number in the hdr file"""
+        if "hdr" not in self._obj:
+            return None
+        return get_hdr_sn(self._obj.hdr.item(), "Temperature")
+
+    @cached_property
+    def con_cond_sn(self) -> str | None:
+        """Finds the first conductivity sensor serial number in the xmlcon"""
+        if self.con_report is None:
+            return None
+        sns = get_con_report_sn(self.con_report, "Conductivity")
+        return sns[0]
+
+    @cached_property
+    def hdr_cond_sn(self) -> str | None:
+        """Finds the conductivity sensor serial number in the hdr file"""
+        if "hdr" not in self._obj:
+            return None
+        return get_hdr_sn(self._obj.hdr.item(), "Conductivity")
+
+    @property
+    def can_make_cnv(self) -> bool:
+        """Test if cnv conversion is likely to succeed
+
+        CNV conversion will be skipped if any of the following are true:
+
+        * missing conreport
+        * missing "all three files"
+        * the hdr temperature serial number is not the same as the first temperature SN in the xmlcon
+        * the hdr conductivity serial number is not the same as the first conductivity SN in the xmlcon
+        """
+        if self.con_report is None:
+            logger.error(
+                f"{self.name}: Unable to make cnv file due to missing conreport"
+            )
+            return False
+
+        if self.all_three_files is False:
+            logger.error(
+                f"{self.name}: Unable to make cnv file due to missing all three files"
+            )
+            return False
+
+        if self.con_temp_sn != self.hdr_temp_sn:
+            logger.error(
+                f"{self.name}: Unable to make cnv file due to xmlcon vs hdr Temperature SN mismatch: {self.con_temp_sn} vs {self.hdr_temp_sn}"
+            )
+            return False
+
+        if self.con_cond_sn != self.hdr_cond_sn:
+            logger.error(
+                f"{self.name}: Unable to make cnv file due to xmlcon vs hdr Conductivity SN mismatch: {self.con_cond_sn} vs {self.hdr_cond_sn}"
+            )
+            return False
+
+        return True
+
+    @cached_property
     def cnv_24hz(self) -> str | None:
         """Caching wrapper around :py:func:`~r2r_ctd.derived.make_cnvs`
 
         Will generate the :py:meth:`cnv_1db` as a side effect if not already done.
         """
-        if self.con_report is None:
-            return None
-
-        if self.all_three_files is False:
+        if not self.can_make_cnv:
             return None
 
         cnv_24hz = get_or_write_derived_file(self._obj, "cnv_24hz", make_cnvs)
@@ -142,10 +208,7 @@ class R2RAccessor:
 
         Will generate the :py:meth:`cnv_24hz` as a side effect if not already done.
         """
-        if self.con_report is None:
-            return None
-
-        if self.all_three_files is False:
+        if not self.can_make_cnv:
             return None
 
         cnv_1db = get_or_write_derived_file(self._obj, "cnv_1db", make_cnvs)
