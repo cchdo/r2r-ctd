@@ -12,7 +12,7 @@ from datetime import UTC, datetime
 from functools import cached_property
 from importlib.metadata import metadata, version
 from statistics import mean
-from typing import Literal
+from typing import Literal, cast
 
 from lxml.builder import ElementMaker
 from lxml.etree import _Element
@@ -20,8 +20,6 @@ from lxml.etree import _Element
 import r2r_ctd.accessors  # noqa: F401
 from r2r_ctd.breakout import Breakout
 from r2r_ctd.derived import (
-    get_con_report_sn,
-    get_hdr_sn,
     get_latitude,
     get_longitude,
     get_model,
@@ -529,32 +527,17 @@ class ResultAggregator:
     @cached_property
     def info_casts_with_temp_sensor_sn_problems(self):
         """List of casts where the serial number in the data header does not
-        match any serial numbers in the xmlcon.
+        match the first serial number for a temperature sensor in the xmlcon.
 
-        .. admonition:: WHOI Divergence
-            :class: warning
-
-            There can be more than one temperature sensor and they will have different serial numbers.
-            The datafile would only have one serial number, but the xmlcon will list all the sensors.
-            The original WHOI code would only check one of the serial numbers found in the xmlcon.
-
-            I'm not sure the exact cause, but there are a lot of false problems in the breakouts I was given
-            to test with, for example: 156405 reports that all the casts have SN problems, but a manual examination
-            and this code, show that there are no mismatches.
-
-            This code checks the serial number in the header file against all the serial numbers in the xmlcon of the
-            same instrument type (e.g. all temperature sensor serial numbers)
+        The seabird software throws an error if the above is not the case, this will prevent the creation of a cnv product
+        even if the serial number is in the secondary channel.
         """
         problem_casts = []
-        for station in self.breakout.stations_hex_paths:
-            data = self.breakout[station]
-            con_report = data.r2r.con_report
-            if con_report is None:
-                continue
-            models = get_con_report_sn(con_report, "Temperature")
-            sn = get_hdr_sn(data.hdr.item(), "Temperature")
-            if sn not in models:
-                problem_casts.append(station.stem)
+        for station in self.breakout:
+            con_sn = station.r2r.con_temp_sn
+            hdr_sn = station.r2r.hdr_temp_sn
+            if con_sn != hdr_sn or None in (con_sn, hdr_sn):
+                problem_casts.append(cast(str, station.r2r.name))
         return Info(
             " ".join(problem_casts),
             name="Casts with temp. sensor serial number problem",
@@ -564,23 +547,17 @@ class ResultAggregator:
     @cached_property
     def info_casts_with_cond_sensor_sn_problems(self):
         """List of casts where the serial number in the data header does not
-        match any serial numbers in the xmlcon.
+        match the first Conductivity sensor serial numbers in the xmlcon.
 
-        .. admonition:: WHOI Divergence
-            :class: warning
-
-            See the info_casts_with_temp_sensor_sn_problems divergence note
+        The seabird software throws an error if the above is not the case, this will prevent the creation of a cnv product
+        even if the serial number is in the secondary channel.
         """
         problem_casts = []
-        for station in self.breakout.stations_hex_paths:
-            data = self.breakout[station]
-            con_report = data.r2r.con_report
-            if con_report is None:
-                continue
-            models = get_con_report_sn(con_report, "Conductivity")
-            sn = get_hdr_sn(data.hdr.item(), "Conductivity")
-            if sn not in models:
-                problem_casts.append(station.stem)
+        for station in self.breakout:
+            con_sn = station.r2r.con_cond_sn
+            hdr_sn = station.r2r.hdr_cond_sn
+            if con_sn != hdr_sn or None in (con_sn, hdr_sn):
+                problem_casts.append(cast(str, station.r2r.name))
         return Info(
             " ".join(problem_casts),
             name="Casts with cond. sensor serial number problem",

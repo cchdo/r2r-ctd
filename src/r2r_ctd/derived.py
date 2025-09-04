@@ -207,7 +207,7 @@ def _con_report_extract_sensors(con_report: str) -> list[str]:
     return sensors
 
 
-def get_con_report_sn(con_report: str, instrument: str) -> set[str]:
+def get_con_report_sn(con_report: str, instrument: str) -> list[str]:
     """Get the serial numbers for instruments from the configuration report (XMLCON)."""
     title = ""
     sns = []
@@ -228,10 +228,10 @@ def get_con_report_sn(con_report: str, instrument: str) -> set[str]:
         key = key.strip().lower()
         value = value.strip()
 
-        if key == "serial number":
+        if key == "serial number" and value not in sns:
             sns.append(value)
 
-    return set(sns)
+    return sns
 
 
 def get_hdr_sn(hdr: str, instrument: str) -> str | None:

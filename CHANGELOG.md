@@ -1,5 +1,8 @@
 # Changelog
 
+## v2025.09.1 (2025-09-??)
+* Skip CNV generation attempt if the hdr temperature/conductivity sensor serial number does not match the first serial number of that sensor type in the xmlcon.
+
 ## v2025.09.0 (2025-09-02)
 * Added a timeout to the SBEBatch.exe container wine command, this attempts to work around a issue where the wine process would never exit even though work had finished.
   Right now the timeout is 5 minutes and fixed.
