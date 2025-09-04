@@ -159,7 +159,7 @@ class R2RAccessor:
         * missing conreport
         * missing "all three files"
         * the hdr temperature serial number is not the same as the first temperature SN in the xmlcon
-        * the hdr conductivity serial number is not the same as the first temperature SN in the xmlcon
+        * the hdr conductivity serial number is not the same as the first conductivity SN in the xmlcon
         """
         if self.con_report is None:
             logger.error(
@@ -179,7 +179,7 @@ class R2RAccessor:
             )
             return False
 
-        if self.con_temp_sn != self.hdr_temp_sn:
+        if self.con_cond_sn != self.hdr_cond_sn:
             logger.error(
                 f"{self.name}: Unable to make cnv file due to xmlcon vs hdr Conductivity SN mismatch: {self.con_cond_sn} vs {self.hdr_cond_sn}"
             )
