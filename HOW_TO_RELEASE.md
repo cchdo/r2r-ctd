@@ -6,7 +6,7 @@ For example, the first release was `2025.08.0`, had another release occurred tha
 
 ## Git Tagging
 The correct tag for a release is the version string above prefixed with a `v` character.
-Foe the above two examples, the git tags would be `v2025.08.0` and `v2025.08.1`
+For the above two examples, the git tags would be `v2025.08.0` and `v2025.08.1`
 
 This tag value is what gets used automatically by the build/publish system for a version number.
 Note that the [python machinery](https://packaging.python.org/en/latest/specifications/version-specifiers/#integer-normalization) will drop the leading zeros from the month.
@@ -23,6 +23,9 @@ Note that the [python machinery](https://packaging.python.org/en/latest/specific
     d. Write a title, should include the version tag value and maybe something clever if you can think of it (have fun)
     e. Make the release notes, try using the "Generate release notes" button and see if that gets everything you need.
        Otherwise include at the minimum the contents of the changelog for this release.
+    f. Have the "Set as the latest release" check box checked.
 4. Click the green "publish" button.
 5. This should trigger a publish GH action that builds and publishes the package to pypi.
+   Check to make sure it actually worked.
 6. The release version will also be archived to zenodo as a new version.
+7. If needed, announce to folks in R2R who are using the software.
