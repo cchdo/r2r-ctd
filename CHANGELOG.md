@@ -1,6 +1,6 @@
 # Changelog
 
-## v2025.09.1 (2025-09-??)
+## v2025.09.1 (2025-09-05)
 * Skip CNV generation attempt if the hdr temperature/conductivity sensor serial number does not match the first serial number of that sensor type in the xmlcon.
 
 ## v2025.09.0 (2025-09-02)
