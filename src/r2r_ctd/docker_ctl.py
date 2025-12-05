@@ -224,7 +224,7 @@ export WINEPREFIX=/.wine
 # if a previous run fails, some state is recorded that prevents a clean start again (via UI popup) , so we just remove that
 rm -rf /.wine/drive_c/users/abc/AppData/Local/Sea-Bird/
 cd /.wine/drive_c/proc/${TMPDIR_R2R}/in;
-timeout ${R2R_TIMEOUT} wine "/.wine/drive_c/Program Files (x86)/Sea-Bird/SBEDataProcessing-Win32/SBEBatch.exe" batch.txt ${R2R_HEXNAME} ../out ${R2R_XMLCON} ../out/${R2R_TMPCNV} -s
+timeout ${R2R_TIMEOUT} wine "/.wine/drive_c/Program Files (x86)/Sea-Bird/SBEDataProcessing-Win32/SBEBatch.exe" batch.txt "${R2R_HEXNAME}" ../out "${R2R_XMLCON}" "../out/${R2R_TMPCNV}" -s
 # if the above process times out, print something to standard error we can check for
 [ $? -eq 124 ] && echo "SBEBatch.exe TIMEOUT" 1>&2 && exit 1;
 exit 0;
