@@ -42,6 +42,7 @@ import time
 from collections.abc import Mapping
 from functools import wraps
 from logging import getLogger
+from os import environ
 from pathlib import Path
 from tempfile import TemporaryDirectory
 from typing import cast
@@ -58,7 +59,9 @@ from r2r_ctd.exceptions import (
 from r2r_ctd.sbe import batch
 from r2r_ctd.state import NamedBytes
 
-SBEDP_IMAGE = "ghcr.io/cchdo/sbedp:v2025.07.1"
+DEFAULT_SBEDP_IMAGE = "ghcr.io/cchdo/sbedp:latest"
+SBEDP_IMAGE = environ.get("R2R_CTD_SBEDP_IMAGE", DEFAULT_SBEDP_IMAGE)
+
 """The current image that will be downloaded/used for the processing"""
 
 logger = getLogger(__name__)

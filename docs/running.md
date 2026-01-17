@@ -28,6 +28,18 @@ It is always safe to interrupt/kill the python process with a {kbd}`control` + {
 There is significant caching of intermediate results and the QA process should quickly catch up to where it left off.
 :::
 
+### ENVVARs
+#### `R2R_CTD_SBEDP_IMAGE`
+The image config can also be controlled via the `R2R_CTD_SBEDP_IMAGE` envvar for using a specific version or for local testing:
+To use a previous version of the published image you could run the command:
+```
+R2R_CTD_SBEDP_IMAGE="ghcr.io/cchdo/sbedp:v2025.07.1" uvx r2r-ctd qa
+```
+or if using a locally built image tag ("testbuild" in this example):
+```
+R2R_CTD_SBEDP_IMAGE="testbuild" uvx r2r-ctd qa
+```
+
 ### Switches
 #### Quiet `-q`
 The verbosity of the logging can be controlled by adding one or more `-q` flags after the `r2r-ctd` but _before_ the `qa` subcommand.
