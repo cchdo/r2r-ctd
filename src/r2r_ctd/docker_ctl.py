@@ -59,7 +59,7 @@ from r2r_ctd.exceptions import (
 from r2r_ctd.sbe import batch
 from r2r_ctd.state import NamedBytes
 
-DEFAULT_SBEDP_IMAGE = "ghcr.io/cchdo/sbedp:latest"
+DEFAULT_SBEDP_IMAGE = "ghcr.io/cchdo/sbedp:v2026.01.0"
 SBEDP_IMAGE = environ.get("R2R_CTD_SBEDP_IMAGE", DEFAULT_SBEDP_IMAGE)
 
 """The current image that will be downloaded/used for the processing"""
