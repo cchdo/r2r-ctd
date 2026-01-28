@@ -1,5 +1,9 @@
 # Changelog
 
+## v2026.01.0 (2026-01-28)
+* Allow runtime configuration of the SBE Data Processing companion image by setting an envvar: `R2R_CTD_SBEDP_IMAGE`.
+* Updated the default SBE Data Processing companion image to `ghcr.io/cchdo/sbedp:v2026.01.0`
+
 ## v2025.09.1 (2025-09-05)
 * Skip CNV generation attempt if the hdr temperature/conductivity sensor serial number does not match the first serial number of that sensor type in the xmlcon.
 
