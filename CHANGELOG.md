@@ -1,6 +1,6 @@
 # Changelog
 
-## v2026.??.? (2026-??-??)
+## v2026.05.0 (2026-05-18)
 * Update the default SBE Data Processing companion image to `ghcr.io/cchdo/sbedp:v2026.05.0`
 
 ## v2026.01.0 (2026-01-28)
