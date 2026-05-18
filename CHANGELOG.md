@@ -1,5 +1,8 @@
 # Changelog
 
+## v2026.??.? (2026-??-??)
+* Update the default SBE Data Processing companion image to `ghcr.io/cchdo/sbedp:v2026.05.0`
+
 ## v2026.01.0 (2026-01-28)
 * Allow runtime configuration of the SBE Data Processing companion image by setting an envvar: `R2R_CTD_SBEDP_IMAGE`.
 * Updated the default SBE Data Processing companion image to `ghcr.io/cchdo/sbedp:v2026.01.0`
