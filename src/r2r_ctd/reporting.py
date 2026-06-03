@@ -605,10 +605,10 @@ class ResultAggregator:
         """
         header = textwrap.dedent(f"""\
         #dataset: GeoCSV 2.0
-        #field_unit: (unitless),(unitless),ISO_8601,second,degrees_east,degrees_north
-        #field_type: string,string,datetime,float,float
-        #field_standard_name: Cast number,Model number of CTD(ex. SBE911) for these data,date and time,Unix Epoch time,longitude of vessel,latitude of vessel
-        #field_missing: ,,,,,
+        #field_unit: (unitless),(unitless),ISO_8601,second,degrees_east,degrees_north,(unitless)
+        #field_type: string,string,datetime,float,float,float,integer
+        #field_standard_name: Cast number,Model number of CTD(ex. SBE911) for these data,date and time,Unix Epoch time,longitude of vessel,latitude of vessel,data status flag (0=data is untested or considered valid)
+        #field_missing: ,,,,,,
         #delimiter: ,
         #standard_name_cv: http://www.rvdata.us/voc/fieldname
         #source: http://www.rvdata.org
