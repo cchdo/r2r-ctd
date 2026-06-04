@@ -610,7 +610,7 @@ class ResultAggregator:
         #field_standard_name: Cast number,Model number of CTD(ex. SBE911) for these data,date and time,Unix Epoch time,longitude of vessel,latitude of vessel,data status flag (0=data is untested or considered valid)
         #field_missing: ,,,,,,
         #delimiter: ,
-        #standard_name_cv: http://www.rvdata.us/voc/fieldname
+        #standard_name_cv: https://www.rvdata.us/about/technical-details/vocabularies/field-name
         #source: http://www.rvdata.org
         #title: R2R Data Product - Generated from {self.breakout.cruise_id} - CTD (Seabird)
         #cruise_id: {self.breakout.cruise_id}
