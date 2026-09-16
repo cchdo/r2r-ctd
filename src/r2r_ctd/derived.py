@@ -2,7 +2,7 @@
 
 e.g. the :py:func:`get_longitude` function tries to extract the longitude information from the hdr file"""
 
-from datetime import datetime
+from datetime import UTC, datetime
 from logging import getLogger
 
 import xarray as xr
@@ -42,25 +42,25 @@ def _parse_coord(coord: str) -> float | None:
     try:
         d_, m_, h_ = coord.split()
     except ValueError:
-        logger.error(f"Could not unpack {coord} into DDM", exc_info=True)
+        logger.exception(f"Could not unpack {coord} into DDM")
         return None
 
     try:
         d = float(d_)
     except ValueError:
-        logger.error(f"Could not parse degree {d_} as float", exc_info=True)
+        logger.exception(f"Could not parse degree {d_} as float")
         return None
 
     try:
         m = float(m_)
     except ValueError:
-        logger.error(f"Could not parse decimal minute {m_} as float", exc_info=True)
+        logger.exception(f"Could not parse decimal minute {m_} as float")
         return None
 
     try:
         h = hem_ints[h_.upper()]
     except KeyError:
-        logger.error(f"Could not parse hemisphere {h_}", exc_info=True)
+        logger.exception(f"Could not parse hemisphere {h_}")
         return None
 
     return (d + (m / 60)) * h
@@ -129,9 +129,11 @@ def get_time(ds: xr.Dataset) -> datetime | None:
             logger.debug(f"Time header normalized from `{value}` to `{normalized}`")
 
             try:
-                dt = datetime.strptime(normalized, "%b %d %Y %H:%M:%S")
+                dt = datetime.strptime(normalized, "%b %d %Y %H:%M:%S").replace(
+                    tzinfo=UTC
+                )
             except ValueError:
-                logger.error("Could not parse header time value", exc_info=True)
+                logger.exception("Could not parse header time value")
                 continue
             return dt
 

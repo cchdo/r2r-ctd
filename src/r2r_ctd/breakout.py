@@ -5,7 +5,7 @@ The other two classes: :py:class:`BBox` and :py:class:`Interval` are in here bec
 """
 
 from dataclasses import dataclass
-from datetime import datetime, timedelta
+from datetime import UTC, datetime, timedelta
 from enum import StrEnum, auto
 from functools import cached_property
 from hashlib import file_digest
@@ -374,7 +374,7 @@ class Breakout:
                 logger.error("Zero or more than one temporal bound in breakout xml")
                 return None
             try:
-                dt = datetime.strptime(elm[0], "%Y-%m-%d")
+                dt = datetime.strptime(elm[0], "%Y-%m-%d").replace(tzinfo=UTC)
                 if name == "stop":
                     dt = dt + timedelta(days=1)
                 result.append(dt)

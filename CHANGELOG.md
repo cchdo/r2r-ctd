@@ -6,6 +6,8 @@
   * If one of either .con or .xmlcon if present, the "all three files" check passes and that file is used for the conreport and cnv products.
   * If both .con and .xmlcon are present, the "all three files" check passes and the .xmlcon is used for conreport and cnv products.
 * The minimum version of odfsbe was bumped to 0.4.0 to support the .con files.
+* Fix bug where parsed datetimes would generate the incorrect unix timestamp due to lack of TZ info.
+* Update some dev dependencies: ruff, pre-commit.
 
 ## v2026.05.0 (2026-05-18)
 * Update the default SBE Data Processing companion image to `ghcr.io/cchdo/sbedp:v2026.05.0`

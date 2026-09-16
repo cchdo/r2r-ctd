@@ -144,7 +144,7 @@ class ContainerGetter:
         if container_ready(self.container):
             return self.container
         else:
-            raise Exception("Could not start container after 5 seconds")
+            raise RuntimeError("Could not start container after 5 seconds")
 
 
 get_container = ContainerGetter()
@@ -261,7 +261,7 @@ def attempts(tires=3):
                     container.restart()
                     logger.critical(f"Waiting for {container.name} to be ready")
                     if not container_ready(container):
-                        raise Exception(
+                        raise RuntimeError(
                             "Could not restart container after 5 seconds"
                         ) from err
 
