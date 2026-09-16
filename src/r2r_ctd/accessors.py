@@ -255,7 +255,7 @@ class R2RAccessor:
     def write_con_report(self, breakout: "Breakout") -> None:
         """Actually write the configuration report files to disk."""
         if self.con_report is None:
-            return None
+            return
 
         fname = get_filename(self._obj.con_report)
         con_path = get_config_path(breakout) / fname
@@ -268,7 +268,7 @@ class R2RAccessor:
         """Actually write the derived cnv files to disk."""
         cnv_contents = getattr(self, cnv)
         if cnv_contents is None:
-            return None
+            return
 
         da = getattr(self._obj, cnv)
         fname = get_filename(da)

@@ -615,7 +615,7 @@ class ResultAggregator:
         #title: R2R Data Product - Generated from {self.breakout.cruise_id} - CTD (Seabird)
         #cruise_id: {self.breakout.cruise_id}
         #device_information: CTD (SeaBird)
-        #creation_date: {datetime.now().replace(microsecond=0).isoformat()}
+        #creation_date: {datetime.now(UTC).replace(microsecond=0).strftime("%Y-%m-%dT%H:%M:%S")}
         #input_data_doi: 10.7284/{self.breakout.fileset_id}
         #This table lists file metadata for all CTD casts for identified cruise(s)
         #dp_flag 0=unflagged,  3=invalid time, 4=invalid position, 6=out of valid cruise time range,
@@ -632,7 +632,7 @@ class ResultAggregator:
             iso_time = ""
             epoch = ""
             if time:
-                iso_time = time.isoformat()
+                iso_time = time.strftime("%Y-%m-%dT%H:%M:%S")
                 epoch = f"{time.timestamp():.0f}"
 
             model = ""
