@@ -59,9 +59,17 @@ def check_three_files(ds: xr.Dataset) -> bool:
     is then checked to see if it has all the correct keys.
     """
     logger.info("Checking if all three files")
-    three_files = {"hex", "xmlcon", "hdr"}
-    if (residual := three_files - ds.keys()) != set():
-        logger.error(f"The following filetypes are missing {residual}")
+    all_of = {"hex", "hdr"}
+    one_of = {"xmlcon", "con"}
+    if (required := all_of & ds.keys()) != all_of:
+        logger.error(
+            f"The following required filetypes are missing: found {required} expected {all_of}"
+        )
+        return False
+    if len(required := one_of & ds.keys()) == 0:
+        logger.error(
+            f"One of following files types must be present: found {required} expected one of {one_of}"
+        )
         return False
     logger.debug("All three files present")
     return True

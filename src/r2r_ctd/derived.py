@@ -140,9 +140,15 @@ def get_time(ds: xr.Dataset) -> datetime | None:
 
 
 def make_con_report(ds: xr.Dataset):
-    """Runs ConReport.exe on the xmlcon file in the dataset"""
-    xmlcon = NamedBytes(ds.sbe.to_xmlcon(), name=ds.xmlcon.attrs["filename"])
-    return run_con_report(xmlcon)
+    """Runs ConReport.exe on the xmlcon or con file in the dataset
+
+    xmlcon is prioritized over con if both are present
+    """
+    if "xmlcon" in ds:
+        config = NamedBytes(ds.sbe.to_xmlcon(), name=ds.xmlcon.attrs["filename"])
+    else:
+        config = NamedBytes(ds.sbe.to_con(), name=ds.con.attrs["filename"])
+    return run_con_report(config)
 
 
 def get_model(con_report: str) -> str | None:
@@ -343,7 +349,11 @@ def make_cnvs(ds: xr.Dataset) -> dict[str, xr.Dataset]:
     derive = NamedBytes(make_derive_psa(con_report), name="derive.psa")
     binavg = NamedBytes(make_binavg_psa(con_report), name="binavg.psa")
 
-    xmlcon = NamedBytes(ds.sbe.to_xmlcon(), name=ds.xmlcon.attrs["filename"])
+    if "xmlcon" in ds:
+        config = NamedBytes(ds.sbe.to_xmlcon(), name=ds.xmlcon.attrs["filename"])
+    else:  # con must be present
+        config = NamedBytes(ds.sbe.to_con(), name=ds.con.attrs["filename"])
+
     hex = NamedBytes(ds.sbe.to_hex(), name=ds.hex.attrs["filename"])
 
-    return run_sbebatch(hex, xmlcon, datcnv, derive, binavg)
+    return run_sbebatch(hex, config, datcnv, derive, binavg)
