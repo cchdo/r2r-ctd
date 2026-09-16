@@ -1,6 +1,6 @@
 # Changelog
 
-## v2026.10.0 (2026-10-16)
+## v2026.09.0 (2026-09-16)
 * Add support for .con files in addition to .xmlcon with the following behavior:
   * If neither a .con or .xmlcon file is present, the "all three files" check fails.
   * If one of either .con or .xmlcon if present, the "all three files" check passes and that file is used for the conreport and cnv products.
