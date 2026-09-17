@@ -46,6 +46,7 @@ from r2r_ctd.derived import (
     make_con_report,
 )
 from r2r_ctd.state import (
+    NamedBytes,
     get_config_path,
     get_filename,
     get_or_write_check,
@@ -111,9 +112,24 @@ class R2RAccessor:
         """Caching wrapper around :py:func:`~r2r_ctd.checks.check_lon_lat`"""
         return get_or_write_check(self._obj, "lon_lat_range", check_lon_lat, bbox=bbox)
 
+    @property
+    def config(self) -> NamedBytes | None:
+        if "xmlcon" in self._obj:
+            return NamedBytes(
+                self._obj.sbe.to_xmlcon(), name=self._obj.xmlcon.attrs["filename"]
+            )
+        elif "con" in self._obj:
+            return NamedBytes(
+                self._obj.sbe.to_con(), name=self._obj.con.attrs["filename"]
+            )
+        return None
+
     @cached_property
     def con_report(self) -> str | None:
         """Caching wrapper around :py:func:`~r2r_ctd.derived.make_con_report`"""
+        if self.config is None:
+            return
+
         con_report = get_or_write_derived_file(self._obj, "con_report", make_con_report)
         if con_report:
             return con_report.item()

@@ -146,11 +146,9 @@ def make_con_report(ds: xr.Dataset):
 
     xmlcon is prioritized over con if both are present
     """
-    if "xmlcon" in ds:
-        config = NamedBytes(ds.sbe.to_xmlcon(), name=ds.xmlcon.attrs["filename"])
-    else:
-        config = NamedBytes(ds.sbe.to_con(), name=ds.con.attrs["filename"])
-    return run_con_report(config)
+    if (config := ds.r2r.config) is not None:
+        return run_con_report(config)
+    return None
 
 
 def get_model(con_report: str) -> str | None:
@@ -345,16 +343,12 @@ def make_cnvs(ds: xr.Dataset) -> dict[str, xr.Dataset]:
 
     Creates all the various configuration files, then passes everything off to the companion container to actually be processed.
     """
+    config = ds.r2r.config
     con_report = ds.r2r.con_report
 
     datcnv = NamedBytes(make_datcnv_psa(con_report), name="datcnv.psa")
     derive = NamedBytes(make_derive_psa(con_report), name="derive.psa")
     binavg = NamedBytes(make_binavg_psa(con_report), name="binavg.psa")
-
-    if "xmlcon" in ds:
-        config = NamedBytes(ds.sbe.to_xmlcon(), name=ds.xmlcon.attrs["filename"])
-    else:  # con must be present
-        config = NamedBytes(ds.sbe.to_con(), name=ds.con.attrs["filename"])
 
     hex = NamedBytes(ds.sbe.to_hex(), name=ds.hex.attrs["filename"])
 
