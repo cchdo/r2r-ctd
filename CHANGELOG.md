@@ -1,6 +1,6 @@
 # Changelog
 
-## v2026.09.1 (2026-09-??)
+## v2026.09.1 (2026-09-17)
 * Fix missing con or xmlcon causing a crash rather than being reported in the QC results.
 
 ## v2026.09.0 (2026-09-16)
